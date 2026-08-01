@@ -43,7 +43,7 @@ export function Sidebar() {
   const { signOut } = useAuth()
 
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider delay={0}>
       <motion.aside
         initial={false}
         animate={{ width: sidebarCollapsed ? 72 : 240 }}

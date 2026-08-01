@@ -87,7 +87,7 @@ export function CalendarHeatmap({
 
             {/* Grid */}
             <div className="flex gap-[3px] h-[105px]">
-              <TooltipProvider delayDuration={100}>
+              <TooltipProvider delay={100}>
                 {weeks.map((week, weekIndex) => (
                   <div key={weekIndex} className="flex flex-col gap-[3px]">
                     {week.map((day) => {

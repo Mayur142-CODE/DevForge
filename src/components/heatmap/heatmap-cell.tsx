@@ -22,7 +22,7 @@ export function HeatmapCell({ date, count, color }: HeatmapCellProps) {
   const status = count > 0 ? `${count} contribution${count > 1 ? 's' : ''}` : 'No contributions'
 
   return (
-    <TooltipProvider delayDuration={0}>
+    <TooltipProvider delay={0}>
       <Tooltip>
         <TooltipTrigger render={
           <motion.div
