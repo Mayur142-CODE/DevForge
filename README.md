@@ -218,21 +218,6 @@ DevForge uses a highly strict, accurate streak calculation algorithm:
 
 ---
 
-## 🗺️ Roadmap
-
-- [x] Email Authentication
-- [x] Contribution Heatmap
-- [x] Analytics Dashboard
-- [ ] Calendar View
-- [ ] Mobile App (PWA Support)
-- [ ] Push Notifications
-- [ ] AI Study Recommendations
-- [ ] Integrated Pomodoro Timer
-- [ ] Habit Groups / Track Folders
-- [ ] Data Export (CSV/JSON)
-
----
-
 ## 🤝 Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
