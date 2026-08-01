@@ -228,7 +228,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
                     value={category.current_streak}
                     max={Math.max(category.longest_streak, 1)}
                     color={category.color}
-                    height="h-3"
+                    size="lg"
                     className="bg-secondary/40 rounded-full overflow-hidden"
                   />
                 </div>
@@ -252,7 +252,7 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
                     value={completionRate}
                     max={100}
                     color={category.color}
-                    height="h-3"
+                    size="lg"
                     className="bg-secondary/40 rounded-full overflow-hidden"
                   />
                 </div>
