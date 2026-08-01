@@ -54,38 +54,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-medium">Notifications</CardTitle>
-            <CardDescription>Configure your notification preferences</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm">Daily Reminder</Label>
-                <p className="text-xs text-muted-foreground">Get reminded to complete your tasks</p>
-              </div>
-              <Switch />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm">Achievement Notifications</Label>
-                <p className="text-xs text-muted-foreground">Be notified when you unlock achievements</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div>
-                <Label className="text-sm">Streak Alerts</Label>
-                <p className="text-xs text-muted-foreground">Get warned before losing a streak</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* Account */}
         <Card>

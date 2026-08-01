@@ -1,6 +1,6 @@
 'use client'
 
-import { ThemeProvider } from '@/components/theme/theme-provider'
+import { ThemeProvider } from 'next-themes'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { getQueryClient } from '@/lib/query-client'
 import { Toaster } from 'sonner'

@@ -1,6 +1,6 @@
 'use client'
 
-import { useTheme } from '@/components/theme/theme-provider'
+import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Sun, Moon, Monitor, Menu } from 'lucide-react'
