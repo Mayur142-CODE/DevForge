@@ -150,7 +150,7 @@ export function CategoryCard({
               value={completionRate}
               max={100}
               color={category.color}
-              height="h-1.5"
+              size="sm"
             />
             
             <div className="flex items-center justify-between pt-1">
