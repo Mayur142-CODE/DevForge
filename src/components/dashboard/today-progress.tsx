@@ -7,6 +7,7 @@ import { useCategories } from '@/hooks/use-categories'
 import { useTodayEntries, useCheckIn, useUncheckIn } from '@/hooks/use-daily-entries'
 import { StreakBadge } from '@/components/shared/streak-badge'
 import { EmptyState } from '@/components/shared/empty-state'
+import { JournalEntryDialog } from '@/components/daily-entries/journal-entry-dialog'
 import { Check, X, Inbox } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -19,16 +20,31 @@ export function TodayProgress() {
   const checkIn = useCheckIn()
   const uncheckIn = useUncheckIn()
   const [celebrating, setCelebrating] = useState(false)
+  const [journalCategoryId, setJournalCategoryId] = useState<string | null>(null)
+  const [journalCategoryName, setJournalCategoryName] = useState<string>('')
 
   const completedIds = new Set(todayEntries?.map((e) => e.category_id) || [])
 
-  const handleToggle = async (categoryId: string) => {
+  const handleToggle = async (categoryId: string, categoryName: string) => {
     if (completedIds.has(categoryId)) {
       uncheckIn.mutate({ categoryId })
     } else {
-      setCelebrating(true)
-      checkIn.mutate({ categoryId })
+      // Open journal modal instead of direct check-in
+      setJournalCategoryId(categoryId)
+      setJournalCategoryName(categoryName)
     }
+  }
+
+  const handleJournalSave = (data: { title: string; description: string; resource_url: string | null }) => {
+    if (!journalCategoryId) return
+    setCelebrating(true)
+    checkIn.mutate({
+      categoryId: journalCategoryId,
+      title: data.title,
+      description: data.description,
+      resource_url: data.resource_url,
+    })
+    setJournalCategoryId(null)
   }
 
   if (loadingCategories || loadingEntries) {
@@ -106,7 +122,7 @@ export function TodayProgress() {
                     variant={isCompleted ? 'secondary' : 'outline'}
                     size="sm"
                     className="h-7 w-7 p-0"
-                    onClick={() => handleToggle(category.id)}
+                    onClick={() => handleToggle(category.id, category.name)}
                     disabled={checkIn.isPending || uncheckIn.isPending}
                   >
                     {isCompleted ? (
@@ -120,6 +136,14 @@ export function TodayProgress() {
             })}
         </CardContent>
       </Card>
+
+      <JournalEntryDialog
+        open={!!journalCategoryId}
+        onOpenChange={(open) => { if (!open) setJournalCategoryId(null) }}
+        onSave={handleJournalSave}
+        isPending={checkIn.isPending}
+        categoryName={journalCategoryName}
+      />
     </>
   )
 }
