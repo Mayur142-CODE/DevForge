@@ -1,37 +1,59 @@
 "use client"
 
-import { use } from 'react'
+import { use, useState } from 'react'
 import { motion } from 'framer-motion'
 import { PageTransition } from '@/components/shared/page-transition'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useCategory, useDeleteCategory } from '@/hooks/use-categories'
-import { useHeatmapData } from '@/hooks/use-daily-entries'
+import { useHeatmapData, useHeatmapEntries, useUpdateEntry, useDeleteEntry } from '@/hooks/use-daily-entries'
 import { HeatmapCalendar } from '@/components/heatmap/heatmap-calendar'
 import { AnimatedCounter } from '@/components/shared/animated-counter'
 import { ProgressBar } from '@/components/shared/progress-bar'
 import { CategoryFormDialog } from '@/components/categories/category-form-dialog'
+import { EntryDetailDialog } from '@/components/daily-entries/entry-detail-dialog'
+import { LearningHistory } from '@/components/daily-entries/learning-history'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Pencil, Trash2, Flame, Trophy, CalendarDays, TrendingUp, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import { getPercentage } from '@/lib/utils'
 import { ConfirmDeleteDialog } from '@/components/categories/confirm-delete-dialog'
+import type { DailyEntry } from '@/types/database'
 
 export default function CategoryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: category, isLoading } = useCategory(id)
   const { data: heatmapData, isLoading: loadingHeatmap } = useHeatmapData(id)
+  const { data: heatmapEntries } = useHeatmapEntries(id)
   const deleteCategory = useDeleteCategory()
+  const updateEntry = useUpdateEntry()
+  const deleteEntry = useDeleteEntry()
   const router = useRouter()
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [selectedEntry, setSelectedEntry] = useState<DailyEntry | null>(null)
+  const [showEntryDetail, setShowEntryDetail] = useState(false)
 
   const confirmDelete = () => {
     deleteCategory.mutate(id, {
       onSuccess: () => router.push('/categories'),
     })
+  }
+
+  const handleCellClick = (date: string, entry?: DailyEntry | null) => {
+    if (entry) {
+      setSelectedEntry(entry)
+      setShowEntryDetail(true)
+    }
+  }
+
+  const handleUpdateEntry = (entryId: string, updates: { title: string; description: string; resource_url: string | null }) => {
+    updateEntry.mutate({ entryId, updates })
+  }
+
+  const handleDeleteEntry = (entryId: string, categoryId: string) => {
+    deleteEntry.mutate({ entryId, categoryId })
   }
 
   if (isLoading || loadingHeatmap) {
@@ -168,7 +190,13 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
             <CardContent className="p-8 pt-6">
               <div className="bg-secondary/10 p-6 rounded-2xl border border-border/20 overflow-hidden relative">
                 <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-secondary/20 to-transparent pointer-events-none z-10 rounded-r-2xl"></div>
-                <HeatmapCalendar data={heatmapData || {}} color={category.color} className="scale-[1.02] transform-gpu origin-left" />
+                <HeatmapCalendar
+                  data={heatmapData || {}}
+                  entries={heatmapEntries}
+                  color={category.color}
+                  className="scale-[1.02] transform-gpu origin-left"
+                  onCellClick={handleCellClick}
+                />
               </div>
             </CardContent>
           </Card>
@@ -261,6 +289,9 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
           </Card>
         </motion.div>
 
+        {/* Learning History */}
+        <LearningHistory categoryId={id} color={category.color} />
+
         <CategoryFormDialog
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
@@ -272,6 +303,16 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
           onOpenChange={setShowDeleteDialog}
           onConfirm={confirmDelete}
           isDeleting={deleteCategory.isPending}
+        />
+
+        <EntryDetailDialog
+          open={showEntryDetail}
+          onOpenChange={setShowEntryDetail}
+          entry={selectedEntry}
+          onUpdate={handleUpdateEntry}
+          onDelete={handleDeleteEntry}
+          isUpdating={updateEntry.isPending}
+          isDeleting={deleteEntry.isPending}
         />
       </div>
     </PageTransition>

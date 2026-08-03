@@ -30,7 +30,21 @@ export function useToggleDailyEntry() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ categoryId, date, completed }: { categoryId: string, date: string, completed: boolean }) => {
+    mutationFn: async ({
+      categoryId,
+      date,
+      completed,
+      title,
+      description,
+      resource_url,
+    }: {
+      categoryId: string
+      date: string
+      completed: boolean
+      title?: string
+      description?: string
+      resource_url?: string | null
+    }) => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("Not authenticated")
 
@@ -39,7 +53,10 @@ export function useToggleDailyEntry() {
           category_id: categoryId,
           user_id: user.id,
           entry_date: date,
-          completed
+          completed,
+          title: title || '',
+          description: description || '',
+          resource_url: resource_url || null,
         }
 
         const { data, error } = await supabase
@@ -71,6 +88,8 @@ export function useToggleDailyEntry() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['daily_entries'] })
       queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['heatmap'] })
+      queryClient.invalidateQueries({ queryKey: ['recent-entries'] })
     },
   })
 }

@@ -90,7 +90,16 @@ export default function DashboardPage() {
                 key={category.id}
                 category={category}
                 dailyEntries={categoryEntries}
-                onToggleEntry={(categoryId, date, completed) => toggleEntry.mutate({ categoryId, date, completed })}
+                onToggleEntry={(categoryId, date, completed, journal) =>
+                  toggleEntry.mutate({
+                    categoryId,
+                    date,
+                    completed,
+                    title: journal?.title,
+                    description: journal?.description,
+                    resource_url: journal?.resource_url,
+                  })
+                }
                 isTogglePending={toggleEntry.isPending}
                 index={index}
               />

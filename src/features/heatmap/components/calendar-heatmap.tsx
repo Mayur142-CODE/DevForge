@@ -110,7 +110,7 @@ export function CalendarHeatmap({
                           />
                           <TooltipContent side="top">
                             <p className="text-xs">
-                              {isCompleted ? 'Completed' : 'No activity'} on {format(day, 'MMM d, yyyy')}
+                              {isCompleted ? 'Completed' : 'Not completed'} on {format(day, 'MMM d, yyyy')}
                             </p>
                           </TooltipContent>
                         </Tooltip>

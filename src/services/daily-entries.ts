@@ -3,7 +3,11 @@ import { formatDateKey } from '@/lib/date-utils'
 
 const supabase = createClient()
 
-export async function checkIn(categoryId: string, date?: string) {
+export async function checkIn(
+  categoryId: string,
+  date?: string,
+  journal?: { title: string; description: string; resource_url?: string | null }
+) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
@@ -18,6 +22,9 @@ export async function checkIn(categoryId: string, date?: string) {
         user_id: user.id,
         entry_date: entryDate,
         completed: true,
+        title: journal?.title || '',
+        description: journal?.description || '',
+        resource_url: journal?.resource_url || null,
       },
       { onConflict: 'category_id,entry_date' }
     )
@@ -45,6 +52,62 @@ export async function uncheckIn(categoryId: string, date?: string) {
 
   // Update streak after unchecking
   await updateStreaks(categoryId)
+}
+
+export async function updateEntry(
+  entryId: string,
+  updates: { title?: string; description?: string; resource_url?: string | null }
+) {
+  const { data, error } = await supabase
+    .from('daily_entries')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', entryId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deleteEntry(entryId: string, categoryId: string) {
+  const { error } = await supabase
+    .from('daily_entries')
+    .delete()
+    .eq('id', entryId)
+
+  if (error) throw error
+
+  // Recalculate streaks after deletion
+  await updateStreaks(categoryId)
+}
+
+export async function getEntryByDate(categoryId: string, date: string) {
+  const { data, error } = await supabase
+    .from('daily_entries')
+    .select('*')
+    .eq('category_id', categoryId)
+    .eq('entry_date', date)
+    .eq('completed', true)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export async function getRecentEntries(categoryId: string, limit: number = 20) {
+  const { data, error } = await supabase
+    .from('daily_entries')
+    .select('*')
+    .eq('category_id', categoryId)
+    .eq('completed', true)
+    .order('entry_date', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return data
 }
 
 export async function getEntriesByDateRange(
@@ -88,7 +151,7 @@ export async function getHeatmapData(categoryId: string, year?: number) {
 
   const { data, error } = await supabase
     .from('daily_entries')
-    .select('entry_date, completed')
+    .select('entry_date, completed, title, description, resource_url')
     .eq('category_id', categoryId)
     .gte('entry_date', startDate)
     .lte('entry_date', endDate)
@@ -102,6 +165,29 @@ export async function getHeatmapData(categoryId: string, year?: number) {
   })
 
   return heatmap
+}
+
+export async function getHeatmapEntries(categoryId: string, year?: number) {
+  const startDate = year ? `${year}-01-01` : formatDateKey(new Date(new Date().setFullYear(new Date().getFullYear() - 1)))
+  const endDate = year ? `${year}-12-31` : formatDateKey(new Date())
+
+  const { data, error } = await supabase
+    .from('daily_entries')
+    .select('*')
+    .eq('category_id', categoryId)
+    .gte('entry_date', startDate)
+    .lte('entry_date', endDate)
+    .eq('completed', true)
+
+  if (error) throw error
+
+  // Build a map of date -> entry for quick lookup
+  const entriesMap: Record<string, typeof data[0]> = {}
+  data.forEach((entry) => {
+    entriesMap[entry.entry_date] = entry
+  })
+
+  return entriesMap
 }
 
 export async function getAllHeatmapData(year?: number) {

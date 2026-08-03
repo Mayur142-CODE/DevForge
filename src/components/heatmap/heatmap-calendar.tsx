@@ -1,25 +1,30 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useTheme } from 'next-themes'
 import { getHeatmapDays, getMonthLabels, formatDateKey } from '@/lib/date-utils'
 import { HEATMAP_COLORS } from '@/lib/constants'
 import { HeatmapCell } from '@/components/heatmap/heatmap-cell'
 import { cn } from '@/lib/utils'
+import type { DailyEntry } from '@/types/database'
 
 interface HeatmapCalendarProps {
   data: Record<string, number>
+  entries?: Record<string, DailyEntry>
   color?: string
   year?: number
   className?: string
+  onCellClick?: (date: string, entry?: DailyEntry | null) => void
 }
 
 export function HeatmapCalendar({
   data,
+  entries,
   color,
   year,
   className,
+  onCellClick,
 }: HeatmapCalendarProps) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -54,8 +59,6 @@ export function HeatmapCalendar({
     if (ratio <= 0.75) return colors.level3
     return colors.level4
   }
-
-  const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', '']
 
   return (
     <motion.div
@@ -100,12 +103,15 @@ export function HeatmapCalendar({
                   {week.map((day) => {
                     const dateKey = formatDateKey(day)
                     const count = data[dateKey] || 0
+                    const entry = entries?.[dateKey] || null
                     return (
                       <HeatmapCell
                         key={dateKey}
                         date={day}
                         count={count}
                         color={getColor(count)}
+                        entry={entry}
+                        onClick={onCellClick}
                       />
                     )
                   })}

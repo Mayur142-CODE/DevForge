@@ -88,7 +88,11 @@ export interface Database {
           entry_date: string
           completed: boolean
           notes: string
+          title: string
+          description: string
+          resource_url: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -97,7 +101,11 @@ export interface Database {
           entry_date?: string
           completed?: boolean
           notes?: string
+          title?: string
+          description?: string
+          resource_url?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -106,6 +114,10 @@ export interface Database {
           entry_date?: string
           completed?: boolean
           notes?: string
+          title?: string
+          description?: string
+          resource_url?: string | null
+          updated_at?: string
         }
       }
       achievements: {
@@ -195,3 +207,4 @@ export type Reminder = Database['public']['Tables']['reminders']['Row']
 export type CategoryInsert = Database['public']['Tables']['categories']['Insert']
 export type CategoryUpdate = Database['public']['Tables']['categories']['Update']
 export type DailyEntryInsert = Database['public']['Tables']['daily_entries']['Insert']
+export type DailyEntryUpdate = Database['public']['Tables']['daily_entries']['Update']
