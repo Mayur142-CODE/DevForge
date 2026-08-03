@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Flame } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'DevForge — Authentication',
+  title: 'StreakHub — Authentication',
 }
 
 export default function AuthLayout({
@@ -16,7 +16,7 @@ export default function AuthLayout({
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-foreground p-12">
         <div>
           <h1 className="text-2xl font-bold text-background tracking-tight">
-            DevForge
+            StreakHub
           </h1>
         </div>
         
@@ -25,7 +25,7 @@ export default function AuthLayout({
           <div className="flex flex-col items-center space-y-6 text-background opacity-90">
             <Flame className="h-32 w-32" strokeWidth={1} />
             <div className="text-center space-y-2">
-              <h2 className="text-3xl font-semibold tracking-tight">Forge Your Discipline</h2>
+              <h2 className="text-3xl font-semibold tracking-tight">Build consistency. One day at a time.</h2>
               <p className="text-background/70 max-w-sm">
                 Track your habits, maintain your streaks, and level up your consistency every single day.
               </p>

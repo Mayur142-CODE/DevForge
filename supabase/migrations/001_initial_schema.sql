@@ -1,4 +1,4 @@
--- DevForge Database Schema
+-- StreakHub Database Schema
 -- Run this in Supabase SQL Editor
 
 -- ============================================

@@ -64,7 +64,7 @@ export function Sidebar() {
                   exit={{ opacity: 0, width: 0 }}
                   className="font-semibold text-lg tracking-tight overflow-hidden whitespace-nowrap"
                 >
-                  DevForge
+                  StreakHub
                 </motion.span>
               )}
             </AnimatePresence>

@@ -37,7 +37,7 @@ export function MobileNavContent() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
             <Flame className="h-4 w-4 text-background" />
           </div>
-          <span className="font-semibold text-lg tracking-tight">DevForge</span>
+          <span className="font-semibold text-lg tracking-tight">StreakHub</span>
         </Link>
       </div>
 

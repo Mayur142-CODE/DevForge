@@ -18,7 +18,7 @@ interface CalendarHeatmapProps {
 export function CalendarHeatmap({ 
   completedDates, 
   onDateClick, 
-  color = 'bg-primary', 
+  color = '#3b82f6', 
   daysCount = 365 
 }: CalendarHeatmapProps) {
   const today = new Date()
@@ -102,8 +102,9 @@ export function CalendarHeatmap({
                                 onClick={() => onDateClick?.(dateStr)}
                                 className={cn(
                                   "w-[12px] h-[12px] rounded-[3px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                  isCompleted ? color : "bg-secondary hover:bg-muted"
+                                  !isCompleted && "bg-secondary hover:bg-muted"
                                 )}
+                                style={isCompleted ? { backgroundColor: color } : undefined}
                               />
                             }
                           />
@@ -134,10 +135,10 @@ export function CalendarHeatmap({
         <span>Less</span>
         <div className="flex gap-[3px]">
           <div className="w-[12px] h-[12px] rounded-[3px] bg-secondary"></div>
-          <div className={cn("w-[12px] h-[12px] rounded-[3px] opacity-40", color)}></div>
-          <div className={cn("w-[12px] h-[12px] rounded-[3px] opacity-60", color)}></div>
-          <div className={cn("w-[12px] h-[12px] rounded-[3px] opacity-80", color)}></div>
-          <div className={cn("w-[12px] h-[12px] rounded-[3px]", color)}></div>
+          <div className="w-[12px] h-[12px] rounded-[3px] opacity-40" style={{ backgroundColor: color }}></div>
+          <div className="w-[12px] h-[12px] rounded-[3px] opacity-60" style={{ backgroundColor: color }}></div>
+          <div className="w-[12px] h-[12px] rounded-[3px] opacity-80" style={{ backgroundColor: color }}></div>
+          <div className="w-[12px] h-[12px] rounded-[3px]" style={{ backgroundColor: color }}></div>
         </div>
         <span>More</span>
       </div>

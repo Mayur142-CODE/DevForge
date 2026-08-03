@@ -1,8 +1,8 @@
 <div align="center">
   <br />
-  <h1>🚀 DevForge</h1>
+  <h1>🔥 StreakHub</h1>
   <p>
-    <strong>Build consistency. Track progress. Forge discipline.</strong>
+    <strong>Build consistency. One day at a time.</strong>
   </p>
   <br />
 
@@ -24,9 +24,9 @@
 
 ## 📖 Overview
 
-**DevForge** is a premium, personal discipline and learning tracker designed specifically for developers. It helps you build daily consistency across technical skills and tracks your journey with beautiful visualizations. 
+**StreakHub** is a modern discipline and streak tracking platform that helps you stay consistent with coding, learning, and personal growth through GitHub-style contribution heatmaps, daily streaks, analytics, and achievements.
 
-Whether you are grinding algorithms or learning new stacks, DevForge keeps you accountable across any technical discipline, including:
+Whether you are grinding algorithms or learning new stacks, StreakHub keeps you accountable across any technical discipline, including:
 
 - LeetCode
 - GitHub Commits
@@ -103,7 +103,7 @@ Whether you are grinding algorithms or learning new stacks, DevForge keeps you a
 <summary><h2>📁 Project Structure</h2></summary>
 
 ```text
-📦 DevForge
+📦 StreakHub
  ┣ 📂 src
  ┃ ┣ 📂 app
  ┃ ┃ ┣ 📂 (auth)        # Authentication routes (Login, Verify, Callback)
@@ -148,12 +148,12 @@ The PostgreSQL backend handles all relational logic securely using Row Level Sec
 <details>
 <summary><h2>⚙️ Installation</h2></summary>
 
-Follow these instructions to set up DevForge locally.
+Follow these instructions to set up StreakHub locally.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Mayur142-CODE/DevForge.git
-   cd DevForge
+   git clone https://github.com/Mayur142-CODE/StreakHub.git
+   cd StreakHub
    ```
 
 2. **Install dependencies:**
@@ -208,7 +208,7 @@ Follow these instructions to set up DevForge locally.
 
 ## 🔥 Streak Logic
 
-DevForge uses a highly strict, accurate streak calculation algorithm:
+StreakHub uses a highly strict, accurate streak calculation algorithm:
 
 - **One completion per category per day**: You can only check in once per day for a specific category.
 - **Immediate Feedback**: Completing today *immediately* increases your current streak. You don't have to wait until tomorrow!

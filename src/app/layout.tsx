@@ -15,15 +15,16 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'DevForge — Discipline Dashboard',
+  title: 'StreakHub — Build consistency. One day at a time.',
   description:
-    'Track your daily learning consistency across multiple technical subjects. Build discipline, maintain streaks, and achieve your learning goals.',
+    'StreakHub is a modern discipline and streak tracking platform that helps you stay consistent with coding, learning, and personal growth through GitHub-style contribution heatmaps, daily streaks, analytics, and achievements.',
   keywords: [
-    'learning tracker',
-    'discipline dashboard',
     'streak tracker',
+    'discipline dashboard',
+    'habit tracker',
     'developer tools',
     'learning consistency',
+    'contribution heatmap',
   ],
 }
 
