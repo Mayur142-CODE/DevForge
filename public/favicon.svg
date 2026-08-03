@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#09090B"/>
+  <rect x="8" y="8" width="496" height="496" rx="104" stroke="#27272A" stroke-width="8" fill="none" opacity="0.6"/>
+  <defs>
+    <linearGradient id="flameGrad" x1="120" y1="420" x2="390" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF3B00"/>
+      <stop offset="50%" stop-color="#FF7700"/>
+      <stop offset="100%" stop-color="#FFB800"/>
+    </linearGradient>
+  </defs>
+  <path d="M 345 105
+           C 345 105, 300 150, 290 190
+           C 280 230, 310 245, 335 265
+           C 370 295, 375 350, 335 400
+           C 295 450, 215 455, 165 415
+           C 185 415, 210 405, 225 390
+           C 195 385, 175 365, 170 335
+           C 185 340, 200 335, 210 325
+           C 175 315, 155 285, 160 245
+           C 175 260, 195 265, 210 260
+           C 170 215, 185 155, 235 125
+           C 205 155, 205 195, 235 220
+           C 260 240, 295 235, 305 190
+           C 315 145, 345 105, 345 105 Z"
+        fill="url(#flameGrad)" />
+</svg>
