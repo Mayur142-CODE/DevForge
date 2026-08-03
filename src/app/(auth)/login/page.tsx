@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Logo } from '@/components/shared/logo'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -36,6 +37,9 @@ export default function LoginPage() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="space-y-6"
     >
+      <div className="lg:hidden flex justify-center pb-2">
+        <Logo size={40} showText={true} />
+      </div>
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Mail } from 'lucide-react'
+import { Logo } from '@/components/shared/logo'
 
 export default function VerifyEmailPage() {
   return (
@@ -13,6 +14,9 @@ export default function VerifyEmailPage() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="space-y-6 text-center"
     >
+      <div className="lg:hidden flex justify-center pb-2">
+        <Logo size={40} showText={true} />
+      </div>
       <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-muted">
         <Mail className="h-8 w-8 text-muted-foreground" />
       </div>

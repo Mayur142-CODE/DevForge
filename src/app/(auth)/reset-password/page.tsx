@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Logo } from '@/components/shared/logo'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -43,6 +44,9 @@ export default function ResetPasswordPage() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="space-y-6"
     >
+      <div className="lg:hidden flex justify-center pb-2">
+        <Logo size={40} showText={true} />
+      </div>
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Set new password</h1>
         <p className="text-sm text-muted-foreground">

@@ -8,6 +8,7 @@ export function ensureIcons() {
     if (!fs.existsSync(sourceImagePath)) return
 
     const targets = [
+      'public/logo.png',
       'public/icon.png',
       'public/icon-192.png',
       'public/icon-512.png',

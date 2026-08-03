@@ -15,6 +15,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Logo } from '@/components/shared/logo'
 import {
   LayoutDashboard,
   Grid3X3,
@@ -25,7 +26,6 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Flame,
 } from 'lucide-react'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -52,10 +52,8 @@ export function Sidebar() {
       >
         {/* Logo */}
         <div className="flex h-14 items-center px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
-              <Flame className="h-4 w-4 text-background" />
-            </div>
+          <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
+            <Logo size={32} />
             <AnimatePresence>
               {!sidebarCollapsed && (
                 <motion.span

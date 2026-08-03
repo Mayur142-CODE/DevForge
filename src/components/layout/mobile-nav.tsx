@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { NAV_ITEMS } from '@/lib/constants'
 import { useAuth } from '@/hooks/use-auth'
 import { Separator } from '@/components/ui/separator'
+import { Logo } from '@/components/shared/logo'
 import {
   LayoutDashboard,
   Grid3X3,
@@ -14,7 +15,6 @@ import {
   User,
   Settings,
   LogOut,
-  Flame,
 } from 'lucide-react'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -34,10 +34,7 @@ export function MobileNavContent() {
     <div className="flex h-full flex-col">
       <div className="flex h-14 items-center px-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
-            <Flame className="h-4 w-4 text-background" />
-          </div>
-          <span className="font-semibold text-lg tracking-tight">StreakHub</span>
+          <Logo size={32} showText={true} />
         </Link>
       </div>
 

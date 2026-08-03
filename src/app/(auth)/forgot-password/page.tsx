@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Loader2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
+import { Logo } from '@/components/shared/logo'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -37,13 +38,18 @@ export default function ForgotPasswordPage() {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="space-y-6"
     >
-      <Link
-        href="/login"
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to login
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          href="/login"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to login
+        </Link>
+        <div className="lg:hidden">
+          <Logo size={32} />
+        </div>
+      </div>
 
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Reset password</h1>
