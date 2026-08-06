@@ -35,7 +35,7 @@ export function ContributionTooltip({
   }, [entries])
 
   return (
-    <TooltipProvider delayDuration={50}>
+    <TooltipProvider delay={50}>
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent

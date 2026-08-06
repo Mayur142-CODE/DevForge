@@ -95,7 +95,7 @@ function SidebarItem({
 
   if (isCollapsed) {
     return (
-      <Tooltip delayDuration={150}>
+      <Tooltip delay={150}>
         <TooltipTrigger asChild>{element}</TooltipTrigger>
         <TooltipContent
           side="right"
@@ -118,7 +118,7 @@ export function Sidebar() {
   const { signOut } = useAuth()
 
   return (
-    <TooltipProvider delayDuration={150}>
+    <TooltipProvider delay={150}>
       <motion.aside
         initial={false}
         animate={{ width: sidebarCollapsed ? 72 : 240 }}
