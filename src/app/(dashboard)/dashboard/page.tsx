@@ -1,22 +1,26 @@
 "use client"
 
 import * as React from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCategories } from '@/features/categories/api/use-categories'
 import { useDailyEntries, useToggleDailyEntry } from '@/features/daily-entries/api/use-daily-entries'
-import { Check, Flame, Trophy, Calendar, Sparkles, Loader2, ArrowRight } from 'lucide-react'
-import { format } from 'date-fns'
+import { useAchievementStats } from '@/hooks/use-achievements'
+import { DynamicIcon } from '@/components/achievements/dynamic-icon'
+import { ProgressBar } from '@/components/shared/progress-bar'
+import { RARITY_COLORS } from '@/lib/achievement-definitions'
+import { Check, Flame, Trophy, Calendar, Sparkles, Loader2, Target, Lock, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { buttonVariants } from '@/components/ui/button'
 import { CategoryCard } from '@/components/categories/category-card'
+import { formatDateKey, getLongestStreak } from '@/lib/date-utils'
 
 export default function DashboardPage() {
   const { data: categories, isLoading: isCategoriesLoading } = useCategories()
-  const currentYear = new Date().getFullYear()
-  const { data: dailyEntries, isLoading: isEntriesLoading } = useDailyEntries(currentYear)
+  const { data: dailyEntries, isLoading: isEntriesLoading } = useDailyEntries()
+  const { recentAchievement, nextAchievement, unlockedCount, totalCount } = useAchievementStats()
   const toggleEntry = useToggleDailyEntry()
-  const today = format(new Date(), 'yyyy-MM-dd')
+  const today = formatDateKey(new Date())
 
   if (isCategoriesLoading || isEntriesLoading) {
     return (
@@ -27,9 +31,22 @@ export default function DashboardPage() {
   }
 
   const activeCategories = categories?.filter(c => c.is_active) || []
-  const totalCompletedDays = categories?.reduce((sum, c) => sum + c.total_completed_days, 0) || 0
-  const longestStreak = categories?.reduce((max, c) => Math.max(max, c.longest_streak), 0) || 0
-  const todayCompleted = dailyEntries?.filter(e => e.entry_date === today && e.completed).length || 0
+  const completedEntries = dailyEntries?.filter(e => e.completed) || []
+  const totalCompletedDays = new Set(completedEntries.map(e => e.entry_date)).size
+  const longestStreak = Math.max(
+    ...activeCategories.map(c => {
+      const catDates = completedEntries.filter(e => e.category_id === c.id).map(e => e.entry_date)
+      return Math.max(getLongestStreak(catDates), c.longest_streak || 0)
+    }),
+    0
+  )
+  const todayCompleted = new Set(completedEntries.filter(e => e.entry_date === today).map(e => e.category_id)).size
+
+  const nextReqValue = nextAchievement?.requirement_value || 1
+  const currentProgressVal = nextAchievement?.requirement_type === 'streak'
+    ? longestStreak
+    : totalCompletedDays
+  const nextProgressRatio = Math.min(Math.round((currentProgressVal / nextReqValue) * 100), 100)
 
   return (
     <div className="space-y-8 p-6 max-w-[1400px] mx-auto w-full">
@@ -54,7 +71,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.1 }}
           >
-            <Card className="border-border/40 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden relative group">
+            <Card className="border-border/40 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden relative group rounded-2xl">
               <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full ${stat.bg} blur-2xl opacity-50 group-hover:opacity-100 transition-opacity`}></div>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between space-y-0 pb-4">
@@ -72,6 +89,63 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* Achievement Spotlight Section */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Recent Achievement Card */}
+        <Card className="border-border/40 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden rounded-2xl relative">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md shrink-0"
+                style={{ backgroundColor: recentAchievement?.badge_color || '#f59e0b' }}
+              >
+                <DynamicIcon name={recentAchievement?.icon || 'Trophy'} className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-500">Recent Achievement</span>
+                <h4 className="font-bold text-sm tracking-tight text-foreground mt-0.5">
+                  {recentAchievement?.name || recentAchievement?.title || 'First Step'}
+                </h4>
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  {recentAchievement?.description || 'Keep building your daily streak!'}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/achievements"
+              className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'text-xs rounded-lg shrink-0' })}
+            >
+              View All <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Link>
+          </CardContent>
+        </Card>
+
+        {/* Next Achievement Progress Card */}
+        <Card className="border-border/40 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden rounded-2xl">
+          <CardContent className="p-5 flex flex-col justify-between h-full space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-blue-500" />
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Next Milestone</span>
+              </div>
+              <span className="text-xs font-semibold text-foreground">
+                {currentProgressVal} / {nextReqValue}
+              </span>
+            </div>
+            <div>
+              <p className="font-bold text-sm text-foreground">
+                {nextAchievement?.name || nextAchievement?.title || '3 Day Streak'}
+              </p>
+              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                {nextAchievement?.description || 'Maintain a 3-day streak to unlock.'}
+              </p>
+            </div>
+            <ProgressBar value={nextProgressRatio} max={100} color="#3b82f6" size="sm" className="rounded-full" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Category Grid */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
         {activeCategories.length === 0 ? (
           <div className="col-span-full py-12 text-center border border-dashed rounded-2xl">

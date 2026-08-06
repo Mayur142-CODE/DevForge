@@ -40,14 +40,14 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon.ico' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
-      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
-      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+      { url: '/icon-192.png', type: 'image/svg+xml' },
+      { url: '/icon-512.png', type: 'image/svg+xml' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/logo.svg', type: 'image/svg+xml' },
     ],
   },
   openGraph: {
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: '/icon-512.png',
+        url: '/logo.svg',
         width: 512,
         height: 512,
         alt: 'StreakHub',
@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'StreakHub',
     description: 'Build consistency. One day at a time.',
-    images: ['/icon-512.png'],
+    images: ['/logo.svg'],
   },
 }
 
@@ -81,9 +81,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { formatDateKey } from '@/lib/date-utils'
+import { formatDateKey, subDays, getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
 
 const supabase = createClient()
 
@@ -146,7 +146,7 @@ export async function getTodayEntries() {
 }
 
 export async function getHeatmapData(categoryId: string, year?: number) {
-  const startDate = year ? `${year}-01-01` : formatDateKey(new Date(new Date().setFullYear(new Date().getFullYear() - 1)))
+  const startDate = year ? `${year}-01-01` : formatDateKey(subDays(new Date(), 364))
   const endDate = year ? `${year}-12-31` : formatDateKey(new Date())
 
   const { data, error } = await supabase
@@ -168,7 +168,7 @@ export async function getHeatmapData(categoryId: string, year?: number) {
 }
 
 export async function getHeatmapEntries(categoryId: string, year?: number) {
-  const startDate = year ? `${year}-01-01` : formatDateKey(new Date(new Date().setFullYear(new Date().getFullYear() - 1)))
+  const startDate = year ? `${year}-01-01` : formatDateKey(subDays(new Date(), 364))
   const endDate = year ? `${year}-12-31` : formatDateKey(new Date())
 
   const { data, error } = await supabase
@@ -194,7 +194,7 @@ export async function getAllHeatmapData(year?: number) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const startDate = year ? `${year}-01-01` : formatDateKey(new Date(new Date().setFullYear(new Date().getFullYear() - 1)))
+  const startDate = year ? `${year}-01-01` : formatDateKey(subDays(new Date(), 364))
   const endDate = year ? `${year}-12-31` : formatDateKey(new Date())
 
   const { data, error } = await supabase
@@ -235,47 +235,15 @@ export async function updateStreaks(categoryId: string) {
 
   if (error) throw error
 
-  const dates = entries.map((e) => e.entry_date)
+  const dates = entries ? entries.map((e) => e.entry_date) : []
 
-  // Calculate current streak
-  let currentStreak = 0
-  const today = formatDateKey(new Date())
-  const yesterday = formatDateKey(new Date(Date.now() - 86400000))
-
-  if (dates.length > 0 && (dates[0] === today || dates[0] === yesterday)) {
-    currentStreak = 1
-    for (let i = 1; i < dates.length; i++) {
-      const curr = new Date(dates[i])
-      const prev = new Date(dates[i - 1])
-      const diff = (prev.getTime() - curr.getTime()) / 86400000
-      if (Math.round(diff) === 1) {
-        currentStreak++
-      } else {
-        break
-      }
-    }
-  }
-
-  // Calculate longest streak
-  let longestStreak = 0
-  let tempStreak = 1
-  const sortedDates = [...dates].sort()
-  for (let i = 1; i < sortedDates.length; i++) {
-    const curr = new Date(sortedDates[i])
-    const prev = new Date(sortedDates[i - 1])
-    const diff = (curr.getTime() - prev.getTime()) / 86400000
-    if (Math.round(diff) === 1) {
-      tempStreak++
-    } else {
-      longestStreak = Math.max(longestStreak, tempStreak)
-      tempStreak = 1
-    }
-  }
-  longestStreak = Math.max(longestStreak, tempStreak)
-  if (dates.length === 0) longestStreak = 0
+  // Calculate streaks using single source of truth rules
+  const currentStreak = getStreakFromDates(dates)
+  const calculatedLongestStreak = getLongestStreak(dates)
 
   // NEVER decrease longest streak
-  const finalLongestStreak = Math.max(longestStreak, existingLongestStreak)
+  const finalLongestStreak = Math.max(calculatedLongestStreak, existingLongestStreak)
+  const totalCompletedDays = new Set(dates).size
 
   // Update the category
   await supabase
@@ -283,7 +251,8 @@ export async function updateStreaks(categoryId: string) {
     .update({
       current_streak: currentStreak,
       longest_streak: finalLongestStreak,
-      total_completed_days: dates.length,
+      total_completed_days: totalCompletedDays,
     })
     .eq('id', categoryId)
 }
+

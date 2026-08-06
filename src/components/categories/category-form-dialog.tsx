@@ -6,21 +6,19 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useCreateCategory, useUpdateCategory } from '@/hooks/use-categories'
+import { ColorPicker } from '@/components/categories/color-picker'
+import { useCreateCategory, useUpdateCategory } from '@/features/categories/api/use-categories'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import type { Category } from '@/types/database'
-
-const PRESET_COLORS = [
-  '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899',
-  '#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e',
-  '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#0f172a',
-]
 
 interface CategoryFormDialogProps {
   open: boolean
@@ -36,7 +34,6 @@ export function CategoryFormDialog({
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [color, setColor] = useState('#6366f1')
-  const [icon, setIcon] = useState('book')
 
   const createCategory = useCreateCategory()
   const updateCategory = useUpdateCategory()
@@ -45,15 +42,13 @@ export function CategoryFormDialog({
 
   useEffect(() => {
     if (category) {
-      setName(category.name)
-      setDescription(category.description)
-      setColor(category.color)
-      setIcon(category.icon)
+      setName(category.name || '')
+      setDescription(category.description || '')
+      setColor(category.color || '#6366f1')
     } else {
       setName('')
       setDescription('')
       setColor('#6366f1')
-      setIcon('book')
     }
   }, [category, open])
 
@@ -61,79 +56,142 @@ export function CategoryFormDialog({
     e.preventDefault()
     if (!name.trim()) return
 
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      toast.error('You must be logged in to save category.')
+      return
+    }
+
+    const iconChar = name.trim().charAt(0).toUpperCase() || 'C'
+
     if (isEditing && category) {
       updateCategory.mutate(
-        { id: category.id, updates: { name, description, color, icon } },
-        { onSuccess: () => onOpenChange(false) }
+        {
+          id: category.id,
+          name: name.trim(),
+          description: description.trim(),
+          color,
+          icon: iconChar,
+        },
+        {
+          onSuccess: () => {
+            toast.success('Category updated successfully!')
+            onOpenChange(false)
+          },
+          onError: (error) => {
+            toast.error('Failed to update category: ' + error.message)
+          },
+        }
       )
     } else {
       createCategory.mutate(
-        { name, description, color, icon },
-        { onSuccess: () => onOpenChange(false) }
+        {
+          user_id: user.id,
+          name: name.trim(),
+          description: description.trim(),
+          color,
+          icon: iconChar,
+          daily_target: 1,
+          is_active: true,
+        },
+        {
+          onSuccess: () => {
+            toast.success('Category created successfully!')
+            onOpenChange(false)
+            setName('')
+            setDescription('')
+            setColor('#6366f1')
+          },
+          onError: (error) => {
+            toast.error('Failed to create category: ' + error.message)
+          },
+        }
       )
     }
   }
 
   const isPending = createCategory.isPending || updateCategory.isPending
+  const displayIcon = name.trim() ? name.trim().charAt(0).toUpperCase() : (category?.icon || 'C')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit Category' : 'Add Category'}</DialogTitle>
+      <DialogContent className="sm:max-w-[440px] rounded-3xl border-border/40 bg-card/95 backdrop-blur-md shadow-2xl p-6">
+        <DialogHeader className="pb-2">
+          <div className="flex items-center gap-3 mb-1">
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-md transition-all duration-300 shrink-0"
+              style={{ backgroundColor: color, boxShadow: `0 6px 20px -4px ${color}60` }}
+            >
+              {displayIcon}
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold tracking-tight">
+                {isEditing ? 'Edit Category' : 'Create Category'}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                {isEditing
+                  ? 'Modify learning track details and theme accent color.'
+                  : 'Add a new learning track or discipline to your dashboard.'}
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-5 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name" className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Category Name
+            </Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. React, DevOps, LeetCode"
+              placeholder="e.g., React, System Design, LeetCode"
+              className="rounded-xl border-border/50 bg-background/50 h-10 text-sm focus-visible:ring-primary"
               required
             />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Description
+            </Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of this category"
+              placeholder="Briefly describe what you'll track and learn..."
               rows={2}
+              className="rounded-xl border-border/50 bg-background/50 text-sm focus-visible:ring-primary min-h-[80px]"
             />
           </div>
+
           <div className="space-y-2">
-            <Label>Color</Label>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  className={`h-7 w-7 rounded-full border-2 transition-all ${
-                    color === c ? 'border-foreground scale-110' : 'border-transparent'
-                  }`}
-                  style={{ backgroundColor: c }}
-                  onClick={() => setColor(c)}
-                />
-              ))}
-            </div>
+            <Label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Accent Color
+            </Label>
+            <ColorPicker value={color} onChange={setColor} />
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+
+          <DialogFooter className="pt-4 border-t border-border/30 gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              className="rounded-xl text-xs font-medium"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isEditing ? 'Saving...' : 'Creating...'}
-                </>
-              ) : isEditing ? (
-                'Save Changes'
-              ) : (
-                'Create Category'
-              )}
+            <Button
+              type="submit"
+              disabled={isPending || !name.trim()}
+              className="rounded-xl text-xs font-semibold shadow-sm"
+              style={{ backgroundColor: color, color: '#fff' }}
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isEditing ? 'Save Changes' : 'Create Category'}
             </Button>
           </DialogFooter>
         </form>

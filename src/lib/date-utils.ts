@@ -62,8 +62,13 @@ export function getIntensityLevel(
 }
 
 export function formatDateKey(date: Date | string): string {
-  const d = typeof date === 'string' ? parseISO(date) : date
-  return format(d, 'yyyy-MM-dd')
+  if (typeof date === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date
+    }
+    return format(parseISO(date), 'yyyy-MM-dd')
+  }
+  return format(date, 'yyyy-MM-dd')
 }
 
 export function getDateRangeForPeriod(
@@ -81,47 +86,51 @@ export function getDateRangeForPeriod(
 }
 
 export function getStreakFromDates(completedDates: string[]): number {
-  if (completedDates.length === 0) return 0
+  if (!completedDates || completedDates.length === 0) return 0
 
-  const sorted = [...completedDates].sort().reverse()
+  const set = new Set(completedDates)
   const today = formatDateKey(new Date())
-  const yesterday = formatDateKey(subDays(new Date(), 1))
 
-  if (sorted[0] !== today && sorted[0] !== yesterday) return 0
+  // Current Streak = number of consecutive completed days ending with today.
+  // If today is not completed, Current Streak must be 0.
+  if (!set.has(today)) {
+    return 0
+  }
 
   let streak = 1
-  for (let i = 1; i < sorted.length; i++) {
-    const current = parseISO(sorted[i])
-    const previous = parseISO(sorted[i - 1])
-    const diff = differenceInDays(previous, current)
-    if (diff === 1) {
-      streak++
-    } else {
-      break
-    }
+  let checkDate = subDays(new Date(), 1)
+
+  while (set.has(formatDateKey(checkDate))) {
+    streak++
+    checkDate = subDays(checkDate, 1)
   }
 
   return streak
 }
 
 export function getLongestStreak(completedDates: string[]): number {
-  if (completedDates.length === 0) return 0
+  if (!completedDates || completedDates.length === 0) return 0
 
-  const sorted = [...completedDates].sort()
+  const uniqueSorted = Array.from(new Set(completedDates)).sort()
+
   let longest = 1
-  let current = 1
+  let temp = 1
 
-  for (let i = 1; i < sorted.length; i++) {
-    const diff = differenceInDays(parseISO(sorted[i]), parseISO(sorted[i - 1]))
+  for (let i = 1; i < uniqueSorted.length; i++) {
+    const prev = parseISO(uniqueSorted[i - 1])
+    const curr = parseISO(uniqueSorted[i])
+    const diff = Math.round((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24))
+
     if (diff === 1) {
-      current++
-      longest = Math.max(longest, current)
+      temp++
     } else if (diff > 1) {
-      current = 1
+      longest = Math.max(longest, temp)
+      temp = 1
     }
   }
 
-  return longest
+  return Math.max(longest, temp)
 }
 
 export { format, subDays, subMonths, subYears, isToday, isSameDay, parseISO, addDays, eachDayOfInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, differenceInDays }
+

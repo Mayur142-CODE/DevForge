@@ -2,21 +2,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { DailyEntry, DailyEntryInsert } from '@/types/database'
 import { updateStreaks } from '@/services/daily-entries'
+import { checkAndUnlockAchievements } from '@/services/achievements'
 
-export function useDailyEntries(year: number, month?: number) {
+export function useDailyEntries(year?: number, month?: number) {
   const supabase = createClient()
 
   return useQuery({
-    queryKey: ['daily_entries', year, month],
+    queryKey: ['daily_entries', year ?? 'all', month ?? 'all'],
     queryFn: async () => {
       let query = supabase.from('daily_entries').select('*')
       
-      const startDate = `${year}-${month ? String(month).padStart(2, '0') : '01'}-01`
-      const endDate = month 
-        ? `${year}-${String(month).padStart(2, '0')}-31` 
-        : `${year}-12-31`
-        
-      query = query.gte('entry_date', startDate).lte('entry_date', endDate)
+      if (year) {
+        const startDate = `${year}-${month ? String(month).padStart(2, '0') : '01'}-01`
+        const endDate = month 
+          ? `${year}-${String(month).padStart(2, '0')}-31` 
+          : `${year}-12-31`
+          
+        query = query.gte('entry_date', startDate).lte('entry_date', endDate)
+      }
 
       const { data, error } = await query
       if (error) throw error
@@ -85,11 +88,22 @@ export function useToggleDailyEntry() {
         return null
       }
     },
-    onSuccess: (_, variables) => {
+    onSuccess: async (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['daily_entries'] })
+      queryClient.invalidateQueries({ queryKey: ['daily-entries'] })
       queryClient.invalidateQueries({ queryKey: ['categories'] })
       queryClient.invalidateQueries({ queryKey: ['heatmap'] })
+      queryClient.invalidateQueries({ queryKey: ['heatmap-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['statistics'] })
       queryClient.invalidateQueries({ queryKey: ['recent-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['achievements'] })
+      queryClient.invalidateQueries({ queryKey: ['user_achievements'] })
+
+      try {
+        await checkAndUnlockAchievements()
+      } catch (e) {
+        // Silently handle
+      }
     },
   })
 }

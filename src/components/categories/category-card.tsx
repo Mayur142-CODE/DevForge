@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,11 +13,10 @@ import { Check, Flame, Trophy, MoreVertical, Pencil, Trash2, ArrowRight } from '
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CalendarHeatmap } from '@/features/heatmap/components/calendar-heatmap'
-import { ProgressBar } from '@/components/shared/progress-bar'
 import { JournalEntryDialog } from '@/components/daily-entries/journal-entry-dialog'
 import { getPercentage } from '@/lib/utils'
+import { formatDateKey, getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
 import type { Category, DailyEntry } from '@/types/database'
-import { format } from 'date-fns'
 
 interface CategoryCardProps {
   category: Category
@@ -43,14 +42,18 @@ export function CategoryCard({
   isTogglePending,
   index = 0,
 }: CategoryCardProps) {
-  const today = format(new Date(), 'yyyy-MM-dd')
+  const today = formatDateKey(new Date())
   const completedDates = dailyEntries.filter(e => e.completed).map(e => e.entry_date)
   const isTodayCompleted = completedDates.includes(today)
   const [showJournal, setShowJournal] = React.useState(false)
+
+  const currentStreak = getStreakFromDates(completedDates)
+  const longestStreak = Math.max(getLongestStreak(completedDates), category.longest_streak || 0)
+  const totalCompletedDays = new Set(completedDates).size
   
-  const completionRate = category.total_completed_days > 0
+  const completionRate = totalCompletedDays > 0
     ? getPercentage(
-        category.total_completed_days,
+        totalCompletedDays,
         Math.max(
           Math.ceil(
             (new Date().getTime() - new Date(category.created_at).getTime()) /
@@ -98,7 +101,7 @@ export function CategoryCard({
                   <CardTitle className="text-lg font-semibold tracking-tight leading-tight">{category.name}</CardTitle>
                   <div className="text-xs text-muted-foreground mt-1 flex items-center">
                     <Flame className="w-3.5 h-3.5 mr-1 text-orange-500" />
-                    <span className="font-medium text-foreground mr-1">{category.current_streak}</span> Day Streak
+                    <span className="font-medium text-foreground mr-1">{currentStreak}</span> Day Streak
                   </div>
                 </div>
               </div>
@@ -152,7 +155,7 @@ export function CategoryCard({
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Longest</span>
                 <span className="font-semibold text-foreground flex items-center tracking-tight">
                   <Trophy className="w-3.5 h-3.5 mr-1 text-yellow-500" />
-                  {category.longest_streak}d
+                  {longestStreak}d
                 </span>
               </div>
             </div>
@@ -163,49 +166,51 @@ export function CategoryCard({
               <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-secondary/20 to-transparent pointer-events-none z-10"></div>
               <CalendarHeatmap 
                 completedDates={completedDates} 
+                entries={dailyEntries}
                 color={category.color}
                 daysCount={84}
               />
             </div>
             
-            <div className="space-y-3 pt-1">
-              <ProgressBar
-                value={completionRate}
-                max={100}
-                color={category.color}
-                size="sm"
-              />
-              
-              <div className="flex items-center justify-between pt-1">
-                {onToggleEntry ? (
-                  <Button
-                    variant={isTodayCompleted ? "secondary" : "default"}
-                    className={`flex-1 mr-2 rounded-lg font-medium transition-all duration-300 ${!isTodayCompleted ? 'shadow-sm' : ''}`}
-                    onClick={handleMarkToday}
-                    disabled={isTogglePending}
-                    style={!isTodayCompleted ? { backgroundColor: category.color, color: '#fff' } : {}}
-                    render={<button />}
-                  >
-                    {isTodayCompleted ? (
-                      <>
-                        <Check className="w-4 h-4 mr-2 text-green-500" />
-                        Completed
-                      </>
-                    ) : (
-                      'Mark Today'
-                    )}
-                  </Button>
-                ) : (
-                  <div className="flex-1"></div>
-                )}
-                
-                <Link 
-                  href={`/categories/${category.id}`}
-                  className={buttonVariants({ variant: "outline", size: "icon", className: "rounded-lg border-border/40 hover:bg-secondary/80" })}
+            {/* Action Buttons Section */}
+            <div className="flex flex-col gap-2.5 pt-2">
+              {onToggleEntry && (
+                <Button
+                  variant={isTodayCompleted ? "secondary" : "default"}
+                  className={`w-full rounded-xl font-medium transition-all duration-300 ${
+                    !isTodayCompleted
+                      ? 'shadow-sm hover:shadow-md hover:opacity-95'
+                      : 'bg-secondary/60 text-muted-foreground'
+                  }`}
+                  onClick={handleMarkToday}
+                  disabled={isTogglePending}
+                  style={!isTodayCompleted ? { backgroundColor: category.color, color: '#fff' } : {}}
                 >
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </Link>
-              </div>
+                  {isTodayCompleted ? (
+                    <>
+                      <Check className="w-4 h-4 mr-2 text-emerald-500 font-bold" />
+                      Completed Today
+                    </>
+                  ) : (
+                    'Mark Today'
+                  )}
+                </Button>
+              )}
+
+              <Link href={`/categories/${category.id}`} className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-xl font-medium text-xs transition-all duration-300 flex items-center justify-center gap-2 group/btn cursor-pointer hover:brightness-110 shadow-2xs"
+                  style={{
+                    color: category.color,
+                    borderColor: `${category.color}40`,
+                    backgroundColor: `${category.color}10`,
+                  }}
+                >
+                  <span>View Details</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" style={{ color: category.color }} />
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { Category, CategoryInsert, CategoryUpdate } from '@/types/database'
+import { checkAndUnlockAchievements } from '@/services/achievements'
 
 export function useCategories() {
   const supabase = createClient()
@@ -35,8 +36,16 @@ export function useCreateCategory() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['achievements'] })
+      queryClient.invalidateQueries({ queryKey: ['user_achievements'] })
+      queryClient.invalidateQueries({ queryKey: ['statistics'] })
+      try {
+        await checkAndUnlockAchievements()
+      } catch (e) {
+        // Silently handle
+      }
     },
   })
 }
@@ -59,6 +68,11 @@ export function useUpdateCategory() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
+      queryClient.invalidateQueries({ queryKey: ['daily_entries'] })
+      queryClient.invalidateQueries({ queryKey: ['daily-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['heatmap'] })
+      queryClient.invalidateQueries({ queryKey: ['heatmap-entries'] })
+      queryClient.invalidateQueries({ queryKey: ['statistics'] })
     },
   })
 }

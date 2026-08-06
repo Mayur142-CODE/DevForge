@@ -18,6 +18,7 @@ import { ArrowLeft, Pencil, Trash2, Flame, Trophy, CalendarDays, TrendingUp, Che
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getPercentage } from '@/lib/utils'
+import { getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
 import { ConfirmDeleteDialog } from '@/components/categories/confirm-delete-dialog'
 import type { DailyEntry } from '@/types/database'
 
@@ -96,9 +97,14 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
     )
   }
 
-  const completionRate = category.total_completed_days > 0
+  const completedDates = Object.keys(heatmapData || {}).filter(d => (heatmapData || {})[d] > 0)
+  const currentStreak = getStreakFromDates(completedDates)
+  const longestStreak = Math.max(getLongestStreak(completedDates), category.longest_streak || 0)
+  const totalCompletedDays = completedDates.length
+
+  const completionRate = totalCompletedDays > 0
     ? getPercentage(
-        category.total_completed_days,
+        totalCompletedDays,
         Math.max(
           Math.ceil(
             (new Date().getTime() - new Date(category.created_at).getTime()) /
@@ -110,9 +116,9 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
     : 0
 
   const stats = [
-    { label: 'Current Streak', value: category.current_streak, icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10", suffix: 'd' },
-    { label: 'Longest Streak', value: category.longest_streak, icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10", suffix: 'd' },
-    { label: 'Total Completions', value: category.total_completed_days, icon: CheckCircle2, color: "text-green-500", bg: "bg-green-500/10", suffix: '' },
+    { label: 'Current Streak', value: currentStreak, icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10", suffix: 'd' },
+    { label: 'Longest Streak', value: longestStreak, icon: Trophy, color: "text-yellow-500", bg: "bg-yellow-500/10", suffix: 'd' },
+    { label: 'Total Completions', value: totalCompletedDays, icon: CheckCircle2, color: "text-green-500", bg: "bg-green-500/10", suffix: '' },
     { label: 'Completion Rate', value: completionRate, icon: TrendingUp, color: "text-blue-500", bg: "bg-blue-500/10", suffix: '%' },
   ]
 
@@ -250,11 +256,11 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
                 <div>
                   <div className="flex justify-between text-sm mb-3">
                     <span className="text-muted-foreground font-medium">Current Streak</span>
-                    <span className="font-bold text-foreground">{category.current_streak} <span className="text-muted-foreground font-normal">/ {Math.max(category.longest_streak, 1)} days</span></span>
+                    <span className="font-bold text-foreground">{currentStreak} <span className="text-muted-foreground font-normal">/ {Math.max(longestStreak, 1)} days</span></span>
                   </div>
                   <ProgressBar
-                    value={category.current_streak}
-                    max={Math.max(category.longest_streak, 1)}
+                    value={currentStreak}
+                    max={Math.max(longestStreak, 1)}
                     color={category.color}
                     size="lg"
                     className="bg-secondary/40 rounded-full overflow-hidden"

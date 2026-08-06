@@ -17,12 +17,12 @@ import {
   Line
 } from 'recharts'
 import { motion } from 'framer-motion'
+import { getLongestStreak } from '@/lib/date-utils'
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
 
 export default function StatisticsPage() {
   const { data: categories, isLoading: isCatLoading } = useCategories()
-  const currentYear = new Date().getFullYear()
-  const { data: entries, isLoading: isEntLoading } = useDailyEntries(currentYear)
+  const { data: entries, isLoading: isEntLoading } = useDailyEntries()
 
   if (isCatLoading || isEntLoading) {
     return (
@@ -32,17 +32,26 @@ export default function StatisticsPage() {
     )
   }
 
-  // Calculate high-level stats
+  // Calculate high-level stats directly from daily entries
   const activeCategories = categories?.filter(c => c.is_active) || []
-  const totalCompletedDays = categories?.reduce((sum, c) => sum + c.total_completed_days, 0) || 0
-  const totalPossibleDays = activeCategories.length * 365 // Simplified for now
+  const completedEntries = entries?.filter(e => e.completed) || []
+  const totalCompletedDays = new Set(completedEntries.map(e => e.entry_date)).size
+  const totalPossibleDays = activeCategories.length * 365
   const overallConsistency = totalPossibleDays > 0 ? ((totalCompletedDays / totalPossibleDays) * 100).toFixed(1) : 0
-  const longestGlobalStreak = categories?.reduce((max, c) => Math.max(max, c.longest_streak), 0) || 0
+  const longestGlobalStreak = Math.max(
+    ...activeCategories.map(c => {
+      const catDates = completedEntries.filter(e => e.category_id === c.id).map(e => e.entry_date)
+      return Math.max(getLongestStreak(catDates), c.longest_streak || 0)
+    }),
+    0
+  )
+
+  const currentYear = new Date().getFullYear()
 
   // Calculate monthly completions for LineChart
   const monthlyData = Array.from({ length: 12 }, (_, i) => {
     const month = String(i + 1).padStart(2, '0')
-    const monthEntries = entries?.filter(e => e.entry_date.startsWith(`${currentYear}-${month}`) && e.completed) || []
+    const monthEntries = completedEntries.filter(e => e.entry_date.startsWith(`${currentYear}-${month}`))
     return {
       name: format(new Date(currentYear, i, 1), 'MMM'),
       total: monthEntries.length
@@ -50,10 +59,13 @@ export default function StatisticsPage() {
   })
 
   // Calculate per-category completion for BarChart
-  const categoryData = activeCategories.map(c => ({
-    name: c.name,
-    total: c.total_completed_days
-  }))
+  const categoryData = activeCategories.map(c => {
+    const catDates = completedEntries.filter(e => e.category_id === c.id).map(e => e.entry_date)
+    return {
+      name: c.name,
+      total: new Set(catDates).size
+    }
+  })
 
   return (
     <div className="space-y-8 p-6 max-w-6xl mx-auto">

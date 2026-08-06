@@ -124,30 +124,39 @@ export interface Database {
         Row: {
           id: string
           name: string
+          title?: string
           description: string
           icon: string
           badge_color: string
+          category?: string
           requirement_type: string
           requirement_value: number
-          category_filter: string | null
+          rarity?: string
+          category_filter?: string | null
         }
         Insert: {
           id?: string
           name: string
+          title?: string
           description: string
           icon: string
           badge_color?: string
+          category?: string
           requirement_type: string
           requirement_value: number
+          rarity?: string
           category_filter?: string | null
         }
         Update: {
           name?: string
+          title?: string
           description?: string
           icon?: string
           badge_color?: string
+          category?: string
           requirement_type?: string
           requirement_value?: number
+          rarity?: string
           category_filter?: string | null
         }
       }

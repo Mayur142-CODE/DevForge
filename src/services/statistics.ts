@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { formatDateKey, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, format } from '@/lib/date-utils'
+import { formatDateKey, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, format, getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
 
 const supabase = createClient()
 
@@ -11,6 +11,7 @@ export interface OverviewStats {
   todayCompleted: number
   todayTotal: number
   overallConsistency: number
+  totalJournalEntries: number
 }
 
 export async function getOverviewStats(): Promise<OverviewStats> {
@@ -23,15 +24,16 @@ export async function getOverviewStats(): Promise<OverviewStats> {
     .eq('user_id', user.id)
     .eq('is_active', true)
 
-  const today = formatDateKey(new Date())
-  const { data: todayEntries } = await supabase
+  const { data: allCompletedEntries } = await supabase
     .from('daily_entries')
     .select('*')
     .eq('user_id', user.id)
-    .eq('entry_date', today)
     .eq('completed', true)
 
-  if (!categories) {
+  const today = formatDateKey(new Date())
+  const todayEntries = (allCompletedEntries || []).filter(e => e.entry_date === today)
+
+  if (!categories || categories.length === 0) {
     return {
       totalCategories: 0,
       activeCategories: 0,
@@ -40,22 +42,39 @@ export async function getOverviewStats(): Promise<OverviewStats> {
       todayCompleted: 0,
       todayTotal: 0,
       overallConsistency: 0,
+      totalJournalEntries: 0,
     }
   }
 
-  const longestStreak = Math.max(...categories.map((c) => c.longest_streak), 0)
-  const totalCompletedDays = categories.reduce((sum, c) => sum + c.total_completed_days, 0)
+  // Count unique calendar dates where user completed at least 1 category
+  const uniqueDates = new Set((allCompletedEntries || []).map(e => e.entry_date))
+  const totalCompletedDays = uniqueDates.size
+
+  // Calculate streaks dynamically per active category
+  const categoryStreaks = categories.map(c => {
+    const catEntries = (allCompletedEntries || []).filter(e => e.category_id === c.id).map(e => e.entry_date)
+    const current = getStreakFromDates(catEntries)
+    const longest = Math.max(getLongestStreak(catEntries), c.longest_streak || 0)
+    return { current, longest }
+  })
+
+  const activeCategoriesCount = categoryStreaks.filter(s => s.current > 0).length
+  const longestStreak = Math.max(...categoryStreaks.map(s => s.longest), 0)
+
+  // Total journal entries (entries with title or description)
+  const journalEntries = (allCompletedEntries || []).filter(e => e.title || e.description)
 
   return {
     totalCategories: categories.length,
-    activeCategories: categories.filter((c) => c.current_streak > 0).length,
+    activeCategories: activeCategoriesCount,
     longestStreak,
     totalCompletedDays,
-    todayCompleted: todayEntries?.length || 0,
+    todayCompleted: new Set(todayEntries.map(e => e.category_id)).size,
     todayTotal: categories.length,
     overallConsistency: categories.length > 0
       ? Math.round((totalCompletedDays / (categories.length * 365)) * 100)
       : 0,
+    totalJournalEntries: journalEntries.length,
   }
 }
 

@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,7 +8,6 @@ import { cn } from '@/lib/utils'
 import { NAV_ITEMS } from '@/lib/constants'
 import { useUIStore } from '@/stores/ui-store'
 import { useAuth } from '@/hooks/use-auth'
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Tooltip,
@@ -37,140 +37,144 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   settings: Settings,
 }
 
+interface SidebarItemProps {
+  href?: string
+  onClick?: () => void
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  isActive?: boolean
+  isCollapsed: boolean
+}
+
+function SidebarItem({
+  href,
+  onClick,
+  icon: Icon,
+  label,
+  isActive = false,
+  isCollapsed,
+}: SidebarItemProps) {
+  const content = (
+    <div
+      className={cn(
+        'flex items-center rounded-xl transition-all duration-200 select-none cursor-pointer',
+        isCollapsed
+          ? 'h-10 w-10 justify-center mx-auto'
+          : 'h-10 px-3 gap-3 w-full',
+        isActive
+          ? 'bg-secondary text-foreground font-semibold'
+          : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+      )}
+    >
+      <Icon className="h-5 w-5 shrink-0" />
+      <AnimatePresence initial={false}>
+        {!isCollapsed && (
+          <motion.span
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 'auto' }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.15 }}
+            className="text-sm font-medium whitespace-nowrap overflow-hidden"
+          >
+            {label}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+
+  const element = href ? (
+    <Link href={href} className="block w-full focus:outline-none">
+      {content}
+    </Link>
+  ) : (
+    <button onClick={onClick} className="block w-full text-left focus:outline-none">
+      {content}
+    </button>
+  )
+
+  if (isCollapsed) {
+    return (
+      <Tooltip delayDuration={150}>
+        <TooltipTrigger asChild>{element}</TooltipTrigger>
+        <TooltipContent
+          side="right"
+          sideOffset={12}
+          className="z-50 flex items-center gap-2 bg-popover text-popover-foreground border border-border/50 shadow-md text-xs font-semibold px-3 py-1.5 rounded-xl"
+        >
+          <Icon className="w-3.5 h-3.5 shrink-0 text-foreground/80" />
+          <span>{label}</span>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return element
+}
+
 export function Sidebar() {
   const pathname = usePathname()
   const { sidebarCollapsed, toggleSidebar } = useUIStore()
   const { signOut } = useAuth()
 
   return (
-    <TooltipProvider delay={0}>
+    <TooltipProvider delayDuration={150}>
       <motion.aside
         initial={false}
         animate={{ width: sidebarCollapsed ? 72 : 240 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="hidden lg:flex flex-col border-r border-border bg-background h-screen"
+        className="hidden lg:flex flex-col border-r border-border bg-background h-screen select-none shrink-0"
       >
-        {/* Logo */}
-        <div className="flex h-14 items-center px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-            <Logo size={32} />
-            <AnimatePresence>
-              {!sidebarCollapsed && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  className="font-semibold text-lg tracking-tight overflow-hidden whitespace-nowrap"
-                >
-                  StreakHub
-                </motion.span>
-              )}
-            </AnimatePresence>
+        {/* Header / Logo */}
+        <div
+          className={cn(
+            'flex h-14 items-center px-4 transition-all duration-200',
+            sidebarCollapsed ? 'justify-center px-2' : 'justify-between'
+          )}
+        >
+          <Link href="/dashboard" className="flex items-center gap-2.5 overflow-hidden">
+            <Logo size={32} showText={!sidebarCollapsed} />
           </Link>
         </div>
 
         <Separator />
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-3">
+        {/* Main Navigation Items */}
+        <nav className="flex-1 space-y-1.5 p-3 overflow-y-auto overflow-x-hidden">
           {NAV_ITEMS.map((item) => {
             const Icon = iconMap[item.icon] || LayoutDashboard
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
 
             return (
-              <Tooltip key={item.href}>
-                <TooltipTrigger render={
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
-                      isActive
-                        ? 'bg-secondary text-foreground'
-                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <AnimatePresence>
-                      {!sidebarCollapsed && (
-                        <motion.span
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: 'auto' }}
-                          exit={{ opacity: 0, width: 0 }}
-                          className="overflow-hidden whitespace-nowrap"
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </Link>
-                } />
-                {sidebarCollapsed && (
-                  <TooltipContent side="right">{item.label}</TooltipContent>
-                )}
-              </Tooltip>
+              <SidebarItem
+                key={item.href}
+                href={item.href}
+                icon={Icon}
+                label={item.label}
+                isActive={isActive}
+                isCollapsed={sidebarCollapsed}
+              />
             )
           })}
         </nav>
 
         <Separator />
 
-        {/* Footer */}
-        <div className="p-3 space-y-1">
-          <Tooltip>
-            <TooltipTrigger render={
-              <button
-                onClick={() => signOut()}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all duration-200"
-              >
-                <LogOut className="h-4 w-4 shrink-0" />
-                <AnimatePresence>
-                  {!sidebarCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="overflow-hidden whitespace-nowrap"
-                    >
-                      Sign out
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-            } />
-            {sidebarCollapsed && (
-              <TooltipContent side="right">Sign out</TooltipContent>
-            )}
-          </Tooltip>
+        {/* Footer Actions (Sign Out & Collapse Toggle) */}
+        <div className="p-3 space-y-1.5">
+          <SidebarItem
+            onClick={() => signOut()}
+            icon={LogOut}
+            label="Sign Out"
+            isCollapsed={sidebarCollapsed}
+          />
 
-          <Tooltip>
-            <TooltipTrigger render={
-              <button
-                onClick={toggleSidebar}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-all duration-200"
-              >
-                {sidebarCollapsed ? (
-                  <ChevronRight className="h-4 w-4 shrink-0" />
-                ) : (
-                  <ChevronLeft className="h-4 w-4 shrink-0" />
-                )}
-                <AnimatePresence>
-                  {!sidebarCollapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="overflow-hidden whitespace-nowrap"
-                    >
-                      Collapse
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-            } />
-            {sidebarCollapsed && (
-              <TooltipContent side="right">Expand</TooltipContent>
-            )}
-          </Tooltip>
+          <SidebarItem
+            onClick={toggleSidebar}
+            icon={sidebarCollapsed ? ChevronRight : ChevronLeft}
+            label={sidebarCollapsed ? 'Expand' : 'Collapse'}
+            isCollapsed={sidebarCollapsed}
+          />
         </div>
       </motion.aside>
     </TooltipProvider>
