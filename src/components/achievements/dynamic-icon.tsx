@@ -20,6 +20,11 @@ import {
   Gem,
   Lock,
   Unlock,
+  Sparkles,
+  Zap,
+  ShieldAlert,
+  Target,
+  CheckCircle2,
   LucideProps,
 } from 'lucide-react'
 
@@ -44,6 +49,11 @@ const ICON_MAP: Record<string, React.FC<LucideProps>> = {
   Gem,
   Lock,
   Unlock,
+  Sparkles,
+  Zap,
+  ShieldAlert,
+  Target,
+  CheckCircle2,
 }
 
 interface DynamicIconProps extends LucideProps {

@@ -2,8 +2,8 @@
 
 import * as React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { useAchievements, useUserAchievements } from '@/hooks/use-achievements'
-import { useOverviewStats } from '@/hooks/use-statistics'
+import { useAchievementStats } from '@/hooks/use-achievements'
+import { AchievementsSkeleton } from '@/components/shared/skeletons'
 import { DynamicIcon } from '@/components/achievements/dynamic-icon'
 import { RARITY_COLORS } from '@/lib/achievement-definitions'
 import { ProgressBar } from '@/components/shared/progress-bar'
@@ -25,59 +25,26 @@ const CATEGORY_FILTERS = [
 ]
 
 export default function AchievementsPage() {
-  const { data: achievements, isLoading: isAchLoading } = useAchievements()
-  const { data: userAchievements, isLoading: isUserAchLoading } = useUserAchievements()
-  const { data: stats } = useOverviewStats()
+  const {
+    evaluatedList,
+    unlockedCount,
+    totalCount,
+    percentage: unlockedPercentage,
+    isLoading: isAchLoading,
+  } = useAchievementStats()
   const [selectedFilter, setSelectedFilter] = React.useState('All')
 
-  if (isAchLoading || isUserAchLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+  if (isAchLoading) {
+    return <AchievementsSkeleton />
   }
-
-  const allList = achievements || []
-  const userList = userAchievements || []
-
-  const unlockedMap = new Map<string, string>() // id -> unlocked_at
-  userList.forEach((ua: any) => {
-    if (ua.achievement_id) {
-      unlockedMap.set(ua.achievement_id, ua.unlocked_at)
-    }
-  })
-
-  const totalCount = allList.length
-  const unlockedCount = unlockedMap.size
-  const unlockedPercentage = totalCount > 0 ? Math.round((unlockedCount / totalCount) * 100) : 0
 
   // Filter list
-  const filteredAchievements = allList.filter((achievement) => {
-    const isUnlocked = unlockedMap.has(achievement.id)
+  const filteredAchievements = (evaluatedList || []).filter((item) => {
     if (selectedFilter === 'All') return true
-    if (selectedFilter === 'Unlocked') return isUnlocked
-    if (selectedFilter === 'Locked') return !isUnlocked
-    return achievement.category === selectedFilter
+    if (selectedFilter === 'Unlocked') return item.isUnlocked
+    if (selectedFilter === 'Locked') return !item.isUnlocked
+    return item.achievement.category === selectedFilter
   })
-
-  const getCurrentProgressValue = (reqType: string) => {
-    switch (reqType) {
-      case 'streak':
-      case 'perfect_week':
-      case 'perfect_month':
-        return stats?.longestStreak || 0
-      case 'total_days':
-      case 'milestone':
-        return stats?.totalCompletedDays || 0
-      case 'categories_count':
-        return stats?.totalCategories || 0
-      case 'journal_count':
-        return stats?.totalJournalEntries || 0
-      default:
-        return 0
-    }
-  }
 
   return (
     <div className="space-y-8 p-6 max-w-7xl mx-auto w-full">
@@ -143,16 +110,10 @@ export default function AchievementsPage() {
       {/* Grid of Achievements */}
       <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <AnimatePresence>
-          {filteredAchievements.map((achievement, index) => {
-            const unlockedAt = unlockedMap.get(achievement.id)
-            const isUnlocked = !!unlockedAt
+          {filteredAchievements.map((item, index) => {
+            const { achievement, current, max, ratio, isUnlocked, unlockedAt } = item
             const rarity = (achievement.rarity || 'Common') as keyof typeof RARITY_COLORS
             const colors = RARITY_COLORS[rarity] || RARITY_COLORS.Common
-
-            const currentProgress = getCurrentProgressValue(achievement.requirement_type)
-            const progressRatio = isUnlocked
-              ? 100
-              : Math.min(Math.round((currentProgress / achievement.requirement_value) * 100), 100)
 
             return (
               <motion.div
@@ -232,11 +193,11 @@ export default function AchievementsPage() {
                           <div className="flex justify-between text-[11px] text-muted-foreground">
                             <span>Progress</span>
                             <span className="font-medium text-foreground">
-                              {currentProgress} / {achievement.requirement_value}
+                              {current} / {max}
                             </span>
                           </div>
                           <ProgressBar
-                            value={progressRatio}
+                            value={ratio}
                             max={100}
                             color={colors.hex}
                             size="sm"

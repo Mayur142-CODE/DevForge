@@ -13,6 +13,7 @@ import {
   isToday,
   isSameDay,
   differenceInDays,
+  differenceInCalendarDays,
   getDay,
   addDays,
   parseISO,
@@ -88,18 +89,20 @@ export function getDateRangeForPeriod(
 export function getStreakFromDates(completedDates: string[]): number {
   if (!completedDates || completedDates.length === 0) return 0
 
-  const set = new Set(completedDates)
-  const today = formatDateKey(new Date())
+  const set = new Set(completedDates.map(d => formatDateKey(d)))
+  const todayKey = formatDateKey(new Date())
+  const yesterdayKey = formatDateKey(subDays(new Date(), 1))
 
-  // Current Streak = number of consecutive completed days ending with today.
-  // If today is not completed, Current Streak must be 0.
-  if (!set.has(today)) {
+  let checkDate: Date
+  if (set.has(todayKey)) {
+    checkDate = new Date()
+  } else if (set.has(yesterdayKey)) {
+    checkDate = subDays(new Date(), 1)
+  } else {
     return 0
   }
 
-  let streak = 1
-  let checkDate = subDays(new Date(), 1)
-
+  let streak = 0
   while (set.has(formatDateKey(checkDate))) {
     streak++
     checkDate = subDays(checkDate, 1)
@@ -111,7 +114,7 @@ export function getStreakFromDates(completedDates: string[]): number {
 export function getLongestStreak(completedDates: string[]): number {
   if (!completedDates || completedDates.length === 0) return 0
 
-  const uniqueSorted = Array.from(new Set(completedDates)).sort()
+  const uniqueSorted = Array.from(new Set(completedDates.map(d => formatDateKey(d)))).sort()
 
   let longest = 1
   let temp = 1
@@ -132,5 +135,49 @@ export function getLongestStreak(completedDates: string[]): number {
   return Math.max(longest, temp)
 }
 
-export { format, subDays, subMonths, subYears, isToday, isSameDay, parseISO, addDays, eachDayOfInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, differenceInDays }
+/**
+ * Calculates the category-specific lifetime completion percentage.
+ * 
+ * Completion % = (number of completed unique calendar days for that category)
+ *                / (number of eligible calendar days for that category) * 100
+ * 
+ * Eligible days start from category.created_at (normalized to local date) through today's local date.
+ */
+export function getCategoryCompletionRate(
+  createdAt: string | Date | undefined | null,
+  completedDates: string[]
+): number {
+  if (!createdAt) return 0
 
+  const todayKey = formatDateKey(new Date())
+  const createdKey = formatDateKey(createdAt)
+
+  // Category created in the future
+  if (createdKey > todayKey) {
+    return 0
+  }
+
+  const createdDate = parseISO(createdKey)
+  const todayDate = parseISO(todayKey)
+
+  // Inclusive eligible days from creation date to today
+  const eligibleDays = Math.max(differenceInCalendarDays(todayDate, createdDate) + 1, 1)
+
+  // Unique completed calendar dates between category creation date and today
+  const validCompletedSet = new Set<string>()
+  if (completedDates) {
+    completedDates.forEach((d) => {
+      const dateKey = formatDateKey(d)
+      if (dateKey >= createdKey && dateKey <= todayKey) {
+        validCompletedSet.add(dateKey)
+      }
+    })
+  }
+
+  const uniqueCompletedDays = validCompletedSet.size
+  const rate = Math.round((uniqueCompletedDays / eligibleDays) * 100)
+
+  return Math.min(Math.max(rate, 0), 100)
+}
+
+export { format, subDays, subMonths, subYears, isToday, isSameDay, parseISO, addDays, eachDayOfInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, differenceInDays, differenceInCalendarDays }

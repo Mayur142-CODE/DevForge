@@ -22,13 +22,14 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
   const [unlockedQueue, setUnlockedQueue] = React.useState<Achievement[]>([])
   const [currentModal, setCurrentModal] = React.useState<Achievement | null>(null)
   const queryClient = useQueryClient()
+  const hasCheckedRef = React.useRef(false)
 
   const checkAchievements = React.useCallback(async () => {
     try {
       const newlyUnlocked = await checkAndUnlockAchievements()
       if (newlyUnlocked.length > 0) {
         setUnlockedQueue((prev) => [...prev, ...newlyUnlocked])
-        queryClient.invalidateQueries({ queryKey: ['achievements'] })
+        // Invalidate caches so the UI updates automatically
         queryClient.invalidateQueries({ queryKey: ['user_achievements'] })
         queryClient.invalidateQueries({ queryKey: ['statistics'] })
       }
@@ -37,8 +38,11 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     }
   }, [queryClient])
 
-  // Run initial check on app mount / login
+  // Run initial check once on mount — non-blocking (renders children immediately)
   React.useEffect(() => {
+    if (hasCheckedRef.current) return
+    hasCheckedRef.current = true
+    // Fire-and-forget: doesn't block rendering
     checkAchievements()
   }, [checkAchievements])
 

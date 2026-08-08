@@ -13,21 +13,23 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { buttonVariants } from '@/components/ui/button'
 import { CategoryCard } from '@/components/categories/category-card'
+import { DashboardSkeleton } from '@/components/shared/skeletons'
 import { formatDateKey, getLongestStreak } from '@/lib/date-utils'
+
+import { useOverviewStats } from '@/hooks/use-statistics'
+import { evaluateAchievement } from '@/lib/achievement-definitions'
 
 export default function DashboardPage() {
   const { data: categories, isLoading: isCategoriesLoading } = useCategories()
   const { data: dailyEntries, isLoading: isEntriesLoading } = useDailyEntries()
+  const { data: overviewStats } = useOverviewStats()
   const { recentAchievement, nextAchievement, unlockedCount, totalCount } = useAchievementStats()
   const toggleEntry = useToggleDailyEntry()
+
   const today = formatDateKey(new Date())
 
   if (isCategoriesLoading || isEntriesLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   const activeCategories = categories?.filter(c => c.is_active) || []
@@ -42,11 +44,9 @@ export default function DashboardPage() {
   )
   const todayCompleted = new Set(completedEntries.filter(e => e.entry_date === today).map(e => e.category_id)).size
 
-  const nextReqValue = nextAchievement?.requirement_value || 1
-  const currentProgressVal = nextAchievement?.requirement_type === 'streak'
-    ? longestStreak
-    : totalCompletedDays
-  const nextProgressRatio = Math.min(Math.round((currentProgressVal / nextReqValue) * 100), 100)
+  const { current: currentProgressVal, max: nextReqValue, ratio: nextProgressRatio } = nextAchievement
+    ? evaluateAchievement(nextAchievement, overviewStats)
+    : { current: 0, max: 1, ratio: 0 }
 
   return (
     <div className="space-y-8 p-6 max-w-[1400px] mx-auto w-full">

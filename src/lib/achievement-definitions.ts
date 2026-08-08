@@ -1,13 +1,34 @@
 export interface AchievementDef {
   id: string
   name: string
+  title?: string
   description: string
   icon: string
   badge_color: string
-  category: 'Streak' | 'Total Days' | 'Category' | 'Journal' | 'Consistency' | 'Explorer' | 'Early Bird' | 'Night Owl' | 'Resource' | 'Milestones'
-  requirement_type: 'streak' | 'total_days' | 'categories_count' | 'journal_count' | 'perfect_week' | 'perfect_month' | 'explorer' | 'early_bird' | 'night_owl' | 'resource_count' | 'milestone'
+  category: 'Streak' | 'Total Days' | 'Category' | 'Journal' | 'Consistency' | 'Explorer' | 'Milestones'
+  requirement_type:
+    | 'first_completion'
+    | 'streak'
+    | 'total_days'
+    | 'consistency'
+    | 'categories_count'
+    | 'journal_count'
+    | 'explorer'
+    | 'milestone'
+    | 'cat_days'
+    | 'cat_streak'
   requirement_value: number
+  category_id?: string | null
   rarity: 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary'
+}
+
+export interface EvaluatedAchievement {
+  achievement: AchievementDef
+  current: number
+  max: number
+  ratio: number
+  isUnlocked: boolean
+  unlockedAt?: string | null
 }
 
 export const RARITY_COLORS: Record<AchievementDef['rarity'], { bg: string; border: string; text: string; hex: string }> = {
@@ -18,22 +39,46 @@ export const RARITY_COLORS: Record<AchievementDef['rarity'], { bg: string; borde
   Legendary: { bg: 'bg-amber-500/10', border: 'border-amber-500/30', text: 'text-amber-500', hex: '#f59e0b' },
 }
 
-export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
-  // 1. Streak Achievements
+export const GLOBAL_ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
+  // 1. GENERAL / FIRST ACTION
   {
     id: 'first_step',
     name: 'First Step',
-    description: 'Complete your first day.',
-    icon: 'Flame',
-    badge_color: '#9ca3af',
+    description: 'Complete your first contribution.',
+    icon: 'Sparkles',
+    badge_color: '#10b981',
     category: 'Streak',
-    requirement_type: 'streak',
+    requirement_type: 'first_completion',
     requirement_value: 1,
     rarity: 'Common',
   },
   {
+    id: 'days_3',
+    name: 'Getting Started',
+    description: 'Complete 3 unique contribution days.',
+    icon: 'CalendarDays',
+    badge_color: '#9ca3af',
+    category: 'Total Days',
+    requirement_type: 'total_days',
+    requirement_value: 3,
+    rarity: 'Common',
+  },
+  {
+    id: 'days_7',
+    name: 'Building Momentum',
+    description: 'Complete 7 unique contribution days.',
+    icon: 'CalendarDays',
+    badge_color: '#22c55e',
+    category: 'Total Days',
+    requirement_type: 'total_days',
+    requirement_value: 7,
+    rarity: 'Uncommon',
+  },
+
+  // 2. STREAK
+  {
     id: 'streak_3',
-    name: '3 Day Streak',
+    name: 'Three Day Flame',
     description: 'Maintain a 3-day streak.',
     icon: 'Flame',
     badge_color: '#22c55e',
@@ -44,7 +89,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
   },
   {
     id: 'streak_7',
-    name: '7 Day Streak',
+    name: 'Week Warrior',
     description: 'Maintain a 7-day streak.',
     icon: 'Flame',
     badge_color: '#3b82f6',
@@ -55,10 +100,10 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
   },
   {
     id: 'streak_14',
-    name: '14 Day Streak',
+    name: 'Fortnight Focus',
     description: 'Maintain a 14-day streak.',
     icon: 'Flame',
-    badge_color: '#3b82f6',
+    badge_color: '#8b5cf6',
     category: 'Streak',
     requirement_type: 'streak',
     requirement_value: 14,
@@ -66,9 +111,9 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
   },
   {
     id: 'streak_30',
-    name: '30 Day Streak',
+    name: 'Monthly Master',
     description: 'Maintain a 30-day streak.',
-    icon: 'Flame',
+    icon: 'Crown',
     badge_color: '#a855f7',
     category: 'Streak',
     requirement_type: 'streak',
@@ -77,10 +122,10 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
   },
   {
     id: 'streak_50',
-    name: '50 Day Streak',
+    name: 'Unstoppable',
     description: 'Maintain a 50-day streak.',
-    icon: 'Flame',
-    badge_color: '#a855f7',
+    icon: 'Zap',
+    badge_color: '#ec4899',
     category: 'Streak',
     requirement_type: 'streak',
     requirement_value: 50,
@@ -88,135 +133,91 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
   },
   {
     id: 'streak_100',
-    name: '100 Day Streak',
+    name: 'Century',
     description: 'Maintain a 100-day streak.',
-    icon: 'Flame',
+    icon: 'ShieldAlert',
     badge_color: '#f59e0b',
     category: 'Streak',
     requirement_type: 'streak',
     requirement_value: 100,
     rarity: 'Legendary',
   },
-  {
-    id: 'streak_365',
-    name: '365 Day Streak',
-    description: 'Maintain a 365-day streak.',
-    icon: 'Flame',
-    badge_color: '#f59e0b',
-    category: 'Streak',
-    requirement_type: 'streak',
-    requirement_value: 365,
-    rarity: 'Legendary',
-  },
 
-  // 2. Total Completed Days
+  // 3. TOTAL DAYS
   {
     id: 'days_10',
-    name: '10 Days Completed',
-    description: 'Complete 10 unique days.',
-    icon: 'CalendarDays',
-    badge_color: '#9ca3af',
-    category: 'Total Days',
-    requirement_type: 'total_days',
-    requirement_value: 10,
-    rarity: 'Common',
-  },
-  {
-    id: 'days_25',
-    name: '25 Days Completed',
-    description: 'Complete 25 unique days.',
-    icon: 'CalendarDays',
-    badge_color: '#22c55e',
-    category: 'Total Days',
-    requirement_type: 'total_days',
-    requirement_value: 25,
-    rarity: 'Uncommon',
-  },
-  {
-    id: 'days_50',
-    name: '50 Days Completed',
-    description: 'Complete 50 unique days.',
+    name: '10 Days Strong',
+    description: 'Complete 10 unique contribution days.',
     icon: 'CalendarDays',
     badge_color: '#3b82f6',
     category: 'Total Days',
     requirement_type: 'total_days',
-    requirement_value: 50,
+    requirement_value: 10,
     rarity: 'Rare',
   },
   {
-    id: 'days_100',
-    name: '100 Days Completed',
-    description: 'Complete 100 unique days.',
+    id: 'days_25',
+    name: '25 Days Strong',
+    description: 'Complete 25 unique contribution days.',
     icon: 'CalendarDays',
     badge_color: '#a855f7',
     category: 'Total Days',
     requirement_type: 'total_days',
-    requirement_value: 100,
+    requirement_value: 25,
     rarity: 'Epic',
   },
   {
-    id: 'days_250',
-    name: '250 Days Completed',
-    description: 'Complete 250 unique days.',
+    id: 'days_50',
+    name: '50 Days Strong',
+    description: 'Complete 50 unique contribution days.',
     icon: 'CalendarDays',
     badge_color: '#f59e0b',
     category: 'Total Days',
     requirement_type: 'total_days',
-    requirement_value: 250,
+    requirement_value: 50,
     rarity: 'Legendary',
   },
   {
-    id: 'days_500',
-    name: '500 Days Completed',
-    description: 'Complete 500 unique days.',
+    id: 'days_100',
+    name: '100 Days Strong',
+    description: 'Complete 100 unique contribution days.',
     icon: 'CalendarDays',
     badge_color: '#f59e0b',
     category: 'Total Days',
     requirement_type: 'total_days',
-    requirement_value: 500,
+    requirement_value: 100,
     rarity: 'Legendary',
   },
 
-  // 3. Category Achievements
+  // 4. CONSISTENCY
   {
-    id: 'cat_1',
-    name: 'Create First Category',
-    description: 'Create your first category.',
-    icon: 'FolderPlus',
-    badge_color: '#9ca3af',
-    category: 'Category',
-    requirement_type: 'categories_count',
-    requirement_value: 1,
-    rarity: 'Common',
-  },
-  {
-    id: 'cat_5',
-    name: 'Create 5 Categories',
-    description: 'Create 5 tracking categories.',
-    icon: 'Layers',
-    badge_color: '#22c55e',
-    category: 'Category',
-    requirement_type: 'categories_count',
-    requirement_value: 5,
-    rarity: 'Uncommon',
-  },
-  {
-    id: 'cat_10',
-    name: 'Create 10 Categories',
-    description: 'Create 10 tracking categories.',
-    icon: 'Grid',
+    id: 'consistency_5',
+    name: 'Consistent Learner',
+    description: 'Complete contributions on 5 consecutive days.',
+    icon: 'Star',
     badge_color: '#3b82f6',
-    category: 'Category',
-    requirement_type: 'categories_count',
-    requirement_value: 10,
+    category: 'Consistency',
+    requirement_type: 'consistency',
+    requirement_value: 5,
     rarity: 'Rare',
   },
+  {
+    id: 'consistency_10',
+    name: 'Dedicated Learner',
+    description: 'Complete contributions on 10 consecutive days.',
+    icon: 'Trophy',
+    badge_color: '#a855f7',
+    category: 'Consistency',
+    requirement_type: 'consistency',
+    requirement_value: 10,
+    rarity: 'Epic',
+  },
 
-  // 4. Journal Achievements
+  // 5. JOURNAL
   {
     id: 'journal_1',
-    name: 'First Journal Entry',
-    description: 'Write your first journal entry.',
+    name: 'First Journal',
+    description: 'Complete a contribution with a title and description.',
     icon: 'PenTool',
     badge_color: '#9ca3af',
     category: 'Journal',
@@ -225,147 +226,261 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDef[] = [
     rarity: 'Common',
   },
   {
-    id: 'journal_25',
-    name: '25 Journal Entries',
-    description: 'Write 25 journal entries.',
+    id: 'journal_10',
+    name: 'Knowledge Logger',
+    description: 'Complete 10 contributions containing descriptions.',
     icon: 'BookOpen',
     badge_color: '#22c55e',
     category: 'Journal',
     requirement_type: 'journal_count',
-    requirement_value: 25,
+    requirement_value: 10,
     rarity: 'Uncommon',
   },
-  {
-    id: 'journal_100',
-    name: '100 Journal Entries',
-    description: 'Write 100 journal entries.',
-    icon: 'Feather',
-    badge_color: '#a855f7',
-    category: 'Journal',
-    requirement_type: 'journal_count',
-    requirement_value: 100,
-    rarity: 'Epic',
-  },
 
-  // 5. Consistency Achievements
+  // 6. EXPLORER
   {
-    id: 'perfect_week',
-    name: 'Perfect Week',
-    description: 'Complete every day for 7 consecutive days.',
-    icon: 'Star',
-    badge_color: '#3b82f6',
-    category: 'Consistency',
-    requirement_type: 'perfect_week',
-    requirement_value: 7,
-    rarity: 'Rare',
-  },
-  {
-    id: 'perfect_month',
-    name: 'Perfect Month',
-    description: 'Complete every day for 30 consecutive days.',
-    icon: 'Trophy',
-    badge_color: '#a855f7',
-    category: 'Consistency',
-    requirement_type: 'perfect_month',
-    requirement_value: 30,
-    rarity: 'Epic',
-  },
-
-  // 6. Explorer
-  {
-    id: 'explorer_5',
+    id: 'explorer_3',
     name: 'Explorer',
-    description: 'Complete at least one task in 5 different categories.',
+    description: 'Create and use 3 different categories with at least one completed contribution each.',
     icon: 'Compass',
     badge_color: '#3b82f6',
     category: 'Explorer',
     requirement_type: 'explorer',
+    requirement_value: 3,
+    rarity: 'Rare',
+  },
+  {
+    id: 'explorer_5',
+    name: 'Multi-Discipline',
+    description: 'Complete contributions in 5 different categories.',
+    icon: 'Layers',
+    badge_color: '#a855f7',
+    category: 'Explorer',
+    requirement_type: 'explorer',
     requirement_value: 5,
-    rarity: 'Rare',
+    rarity: 'Epic',
   },
 
-  // 7. Early Bird
+  // 7. MILESTONE
   {
-    id: 'early_bird',
-    name: 'Early Bird',
-    description: 'Complete a task before 9 AM.',
-    icon: 'Sun',
-    badge_color: '#22c55e',
-    category: 'Early Bird',
-    requirement_type: 'early_bird',
-    requirement_value: 9,
-    rarity: 'Uncommon',
-  },
-
-  // 8. Night Owl
-  {
-    id: 'night_owl',
-    name: 'Night Owl',
-    description: 'Complete a task after 10 PM.',
-    icon: 'Moon',
-    badge_color: '#22c55e',
-    category: 'Night Owl',
-    requirement_type: 'night_owl',
-    requirement_value: 22,
-    rarity: 'Uncommon',
-  },
-
-  // 9. Resource Learner
-  {
-    id: 'resource_25',
-    name: 'Resource Learner',
-    description: 'Add 25 resource links.',
-    icon: 'Link2',
-    badge_color: '#3b82f6',
-    category: 'Resource',
-    requirement_type: 'resource_count',
-    requirement_value: 25,
-    rarity: 'Rare',
-  },
-
-  // 10. Milestones
-  {
-    id: 'bronze_learner',
-    name: 'Bronze Learner',
-    description: 'Reach 5 completed days.',
+    id: 'rising_star',
+    name: 'Rising Star',
+    description: 'Reach a longest streak of at least 14 days.',
     icon: 'Award',
-    badge_color: '#cd7f32',
-    category: 'Milestones',
-    requirement_type: 'milestone',
-    requirement_value: 5,
-    rarity: 'Common',
-  },
-  {
-    id: 'silver_learner',
-    name: 'Silver Learner',
-    description: 'Reach 25 completed days.',
-    icon: 'Medal',
-    badge_color: '#c0c0c0',
-    category: 'Milestones',
-    requirement_type: 'milestone',
-    requirement_value: 25,
-    rarity: 'Uncommon',
-  },
-  {
-    id: 'gold_learner',
-    name: 'Gold Learner',
-    description: 'Reach 50 completed days.',
-    icon: 'Crown',
     badge_color: '#f59e0b',
     category: 'Milestones',
     requirement_type: 'milestone',
-    requirement_value: 50,
+    requirement_value: 14,
     rarity: 'Rare',
   },
-  {
-    id: 'master_learner',
-    name: 'Master Learner',
-    description: 'Reach 100 completed days.',
-    icon: 'Gem',
-    badge_color: '#a855f7',
-    category: 'Milestones',
-    requirement_type: 'milestone',
-    requirement_value: 100,
-    rarity: 'Epic',
-  },
 ]
+
+export function generateCategoryAchievements(
+  categories: Array<{ id: string; name: string; color?: string }>
+): AchievementDef[] {
+  const achievements: AchievementDef[] = []
+
+  for (const cat of categories) {
+    const color = cat.color || '#3b82f6'
+
+    achievements.push(
+      {
+        id: `cat_starter_${cat.id}`,
+        name: `${cat.name} Starter`,
+        title: `${cat.name} Starter`,
+        description: `Complete 1 day in ${cat.name}.`,
+        icon: 'CheckCircle2',
+        badge_color: color,
+        category: 'Category',
+        requirement_type: 'cat_days',
+        requirement_value: 1,
+        category_id: cat.id,
+        rarity: 'Common',
+      },
+      {
+        id: `cat_regular_${cat.id}`,
+        name: `${cat.name} Regular`,
+        title: `${cat.name} Regular`,
+        description: `Complete 7 unique days in ${cat.name}.`,
+        icon: 'CalendarDays',
+        badge_color: color,
+        category: 'Category',
+        requirement_type: 'cat_days',
+        requirement_value: 7,
+        category_id: cat.id,
+        rarity: 'Uncommon',
+      },
+      {
+        id: `cat_dedicated_${cat.id}`,
+        name: `${cat.name} Dedicated`,
+        title: `${cat.name} Dedicated`,
+        description: `Complete 30 unique days in ${cat.name}.`,
+        icon: 'Trophy',
+        badge_color: color,
+        category: 'Category',
+        requirement_type: 'cat_days',
+        requirement_value: 30,
+        category_id: cat.id,
+        rarity: 'Rare',
+      },
+      {
+        id: `cat_master_${cat.id}`,
+        name: `${cat.name} Master`,
+        title: `${cat.name} Master`,
+        description: `Complete 100 unique days in ${cat.name}.`,
+        icon: 'Crown',
+        badge_color: color,
+        category: 'Category',
+        requirement_type: 'cat_days',
+        requirement_value: 100,
+        category_id: cat.id,
+        rarity: 'Epic',
+      },
+      {
+        id: `cat_streak_${cat.id}`,
+        name: `${cat.name} Streak`,
+        title: `${cat.name} Streak`,
+        description: `Maintain a 7-day streak in ${cat.name}.`,
+        icon: 'Flame',
+        badge_color: color,
+        category: 'Category',
+        requirement_type: 'cat_streak',
+        requirement_value: 7,
+        category_id: cat.id,
+        rarity: 'Rare',
+      },
+      {
+        id: `cat_legend_${cat.id}`,
+        name: `${cat.name} Legend`,
+        title: `${cat.name} Legend`,
+        description: `Maintain a 30-day streak in ${cat.name}.`,
+        icon: 'Zap',
+        badge_color: color,
+        category: 'Category',
+        requirement_type: 'cat_streak',
+        requirement_value: 30,
+        category_id: cat.id,
+        rarity: 'Legendary',
+      }
+    )
+  }
+
+  return achievements
+}
+
+export function getAchievementProgress(
+  achievement: {
+    id: string
+    requirement_type: string
+    requirement_value: number
+    category_id?: string | null
+  },
+  stats?: {
+    totalCompletedDays?: number
+    longestStreak?: number
+    currentStreak?: number
+    totalCategories?: number
+    completedCategoriesCount?: number
+    totalJournalEntries?: number
+    categoryStatsMap?: Record<
+      string,
+      { completedDays: number; currentStreak: number; longestStreak: number }
+    >
+  } | null
+): { current: number; max: number; ratio: number } {
+  const reqVal = achievement.requirement_value || 1
+  if (!stats) {
+    return { current: 0, max: reqVal, ratio: 0 }
+  }
+
+  let current = 0
+
+  switch (achievement.requirement_type) {
+    case 'first_completion':
+      current = (stats.totalCompletedDays || 0) > 0 ? 1 : 0
+      break
+
+    case 'streak':
+    case 'consistency':
+      current = stats.longestStreak || 0
+      if (reqVal === 1 && (stats.totalCompletedDays || 0) >= 1) {
+        current = Math.max(current, 1)
+      }
+      break
+
+    case 'total_days':
+      current = stats.totalCompletedDays || 0
+      break
+
+    case 'categories_count':
+      current = stats.totalCategories || 0
+      break
+
+    case 'explorer':
+      current = stats.completedCategoriesCount ?? stats.totalCategories ?? 0
+      break
+
+    case 'journal_count':
+      current = stats.totalJournalEntries || 0
+      break
+
+    case 'milestone':
+      if (achievement.id === 'rising_star') {
+        current = stats.longestStreak || 0
+      } else {
+        current = stats.totalCompletedDays || 0
+      }
+      break
+
+    case 'cat_days':
+      if (achievement.category_id && stats.categoryStatsMap?.[achievement.category_id]) {
+        current = stats.categoryStatsMap[achievement.category_id].completedDays || 0
+      }
+      break
+
+    case 'cat_streak':
+      if (achievement.category_id && stats.categoryStatsMap?.[achievement.category_id]) {
+        const catStat = stats.categoryStatsMap[achievement.category_id]
+        current = Math.max(catStat.currentStreak || 0, catStat.longestStreak || 0)
+      }
+      break
+
+    default:
+      current = 0
+  }
+
+  const ratio = Math.min(Math.round((current / reqVal) * 100), 100)
+  return { current, max: reqVal, ratio }
+}
+
+export function evaluateAchievement(
+  achievement: AchievementDef,
+  stats?: {
+    totalCompletedDays?: number
+    longestStreak?: number
+    currentStreak?: number
+    totalCategories?: number
+    completedCategoriesCount?: number
+    totalJournalEntries?: number
+    categoryStatsMap?: Record<
+      string,
+      { completedDays: number; currentStreak: number; longestStreak: number }
+    >
+  } | null,
+  unlockedMap?: Map<string, string>
+): EvaluatedAchievement {
+  const { current, max, ratio } = getAchievementProgress(achievement, stats)
+  const dbUnlockedAt = unlockedMap?.get(achievement.id)
+
+  // Core rule: Unlocked if recorded in DB OR if current progress >= requirement max
+  const isUnlocked = !!dbUnlockedAt || current >= max
+
+  return {
+    achievement,
+    current,
+    max,
+    ratio: isUnlocked ? 100 : Math.min(ratio, 100),
+    isUnlocked,
+    unlockedAt: dbUnlockedAt || (isUnlocked ? new Date().toISOString() : null),
+  }
+}

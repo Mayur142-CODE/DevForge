@@ -19,17 +19,14 @@ import {
 import { motion } from 'framer-motion'
 import { getLongestStreak } from '@/lib/date-utils'
 import { format, parseISO, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
+import { StatisticsSkeleton } from '@/components/shared/skeletons'
 
 export default function StatisticsPage() {
   const { data: categories, isLoading: isCatLoading } = useCategories()
   const { data: entries, isLoading: isEntLoading } = useDailyEntries()
 
   if (isCatLoading || isEntLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-      </div>
-    )
+    return <StatisticsSkeleton />
   }
 
   // Calculate high-level stats directly from daily entries
@@ -66,6 +63,9 @@ export default function StatisticsPage() {
       total: new Set(catDates).size
     }
   })
+
+  const maxCategoryNameLength = Math.max(...categoryData.map(c => c.name.length), 0)
+  const yAxisWidth = Math.min(220, Math.max(120, maxCategoryNameLength * 8 + 15))
 
   return (
     <div className="space-y-8 p-6 max-w-6xl mx-auto">
@@ -155,7 +155,7 @@ export default function StatisticsPage() {
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={categoryData} layout="vertical" margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={categoryData} layout="vertical" margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--border)" />
                 <XAxis type="number" hide />
                 <YAxis 
@@ -163,6 +163,8 @@ export default function StatisticsPage() {
                   type="category" 
                   axisLine={false} 
                   tickLine={false} 
+                  width={yAxisWidth}
+                  interval={0}
                   tick={{ fontSize: 12, fill: 'var(--muted-foreground)' }} 
                 />
                 <Tooltip 

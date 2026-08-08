@@ -17,8 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowLeft, Pencil, Trash2, Flame, Trophy, CalendarDays, TrendingUp, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { getPercentage } from '@/lib/utils'
-import { getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
+import { getStreakFromDates, getLongestStreak, getCategoryCompletionRate } from '@/lib/date-utils'
 import { ConfirmDeleteDialog } from '@/components/categories/confirm-delete-dialog'
 import type { DailyEntry } from '@/types/database'
 
@@ -100,20 +99,8 @@ export default function CategoryDetailPage({ params }: { params: Promise<{ id: s
   const completedDates = Object.keys(heatmapData || {}).filter(d => (heatmapData || {})[d] > 0)
   const currentStreak = getStreakFromDates(completedDates)
   const longestStreak = Math.max(getLongestStreak(completedDates), category.longest_streak || 0)
-  const totalCompletedDays = completedDates.length
-
-  const completionRate = totalCompletedDays > 0
-    ? getPercentage(
-        totalCompletedDays,
-        Math.max(
-          Math.ceil(
-            (new Date().getTime() - new Date(category.created_at).getTime()) /
-              (1000 * 60 * 60 * 24)
-          ),
-          1
-        )
-      )
-    : 0
+  const totalCompletedDays = new Set(completedDates).size
+  const completionRate = getCategoryCompletionRate(category.created_at, completedDates)
 
   const stats = [
     { label: 'Current Streak', value: currentStreak, icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10", suffix: 'd' },

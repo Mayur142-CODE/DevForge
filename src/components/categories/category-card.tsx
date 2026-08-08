@@ -14,8 +14,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CalendarHeatmap } from '@/features/heatmap/components/calendar-heatmap'
 import { JournalEntryDialog } from '@/components/daily-entries/journal-entry-dialog'
-import { getPercentage } from '@/lib/utils'
-import { formatDateKey, getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
+import { formatDateKey, getStreakFromDates, getLongestStreak, getCategoryCompletionRate } from '@/lib/date-utils'
 import type { Category, DailyEntry } from '@/types/database'
 
 interface CategoryCardProps {
@@ -49,20 +48,7 @@ export function CategoryCard({
 
   const currentStreak = getStreakFromDates(completedDates)
   const longestStreak = Math.max(getLongestStreak(completedDates), category.longest_streak || 0)
-  const totalCompletedDays = new Set(completedDates).size
-  
-  const completionRate = totalCompletedDays > 0
-    ? getPercentage(
-        totalCompletedDays,
-        Math.max(
-          Math.ceil(
-            (new Date().getTime() - new Date(category.created_at).getTime()) /
-              (1000 * 60 * 60 * 24)
-          ),
-          1
-        )
-      )
-    : 0
+  const completionRate = getCategoryCompletionRate(category.created_at, completedDates)
 
   const handleMarkToday = () => {
     if (isTodayCompleted) {

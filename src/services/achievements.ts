@@ -1,20 +1,69 @@
 import { createClient } from '@/lib/supabase/client'
-import { ACHIEVEMENT_DEFINITIONS } from '@/lib/achievement-definitions'
+import {
+  GLOBAL_ACHIEVEMENT_DEFINITIONS,
+  generateCategoryAchievements,
+  evaluateAchievement,
+  AchievementDef,
+} from '@/lib/achievement-definitions'
 import { getStreakFromDates, getLongestStreak } from '@/lib/date-utils'
-import type { Achievement } from '@/types/database'
+import type { Category } from '@/types/database'
 
 const supabase = createClient()
 
-export async function ensureAchievementsSeeded() {
+/**
+ * Returns achievement definitions purely in-memory.
+ * No Supabase call needed — definitions are generated from code + user categories.
+ */
+export function getAchievementDefinitions(categories: Category[] = []): AchievementDef[] {
+  const dynamicCatDefs = generateCategoryAchievements(categories)
+  return [...GLOBAL_ACHIEVEMENT_DEFINITIONS, ...dynamicCatDefs]
+}
+
+/**
+ * Fetches the user's unlocked achievements from the database.
+ */
+export async function getUserAchievements() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data, error } = await supabase
+    .from('user_achievements')
+    .select('achievement_id, unlocked_at')
+    .eq('user_id', user.id)
+    .order('unlocked_at', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+
+/**
+ * Ensures achievement rows exist in the `achievements` table for foreign key constraints.
+ * Uses batch upsert instead of sequential per-definition upserts.
+ */
+async function ensureAchievementsInDb(allDefs: AchievementDef[]) {
   try {
-    const { data: existing } = await supabase.from('achievements').select('id')
-    const existingIds = new Set((existing || []).map((a) => a.id))
+    const { data: existing } = await supabase
+      .from('achievements')
+      .select('id, requirement_type, requirement_value, name')
 
-    const missing = ACHIEVEMENT_DEFINITIONS.filter((def) => !existingIds.has(def.id))
+    const existingMap = new Map((existing || []).map((a) => [a.id, a]))
 
-    if (missing.length > 0) {
-      for (const def of missing) {
-        await supabase.from('achievements').upsert({
+    const toUpsert = allDefs.filter((def) => {
+      const item = existingMap.get(def.id)
+      return (
+        !item ||
+        item.requirement_type !== def.requirement_type ||
+        item.requirement_value !== def.requirement_value ||
+        item.name !== def.name
+      )
+    })
+
+    if (toUpsert.length > 0) {
+      // Batch upsert all missing/changed definitions at once
+      await supabase.from('achievements').upsert(
+        toUpsert.map((def) => ({
           id: def.id,
           name: def.name,
           title: def.name,
@@ -24,173 +73,106 @@ export async function ensureAchievementsSeeded() {
           category: def.category,
           requirement_type: def.requirement_type,
           requirement_value: def.requirement_value,
+          category_filter: def.category_id || null,
           rarity: def.rarity,
-        })
-      }
+        }))
+      )
     }
   } catch (err) {
     console.error('Error seeding achievements:', err)
   }
 }
 
-export async function getAchievements(): Promise<Achievement[]> {
-  await ensureAchievementsSeeded()
-
-  const { data, error } = await supabase
-    .from('achievements')
-    .select('*')
-
-  if (error) throw error
-
-  // Sort according to definition list order
-  const idOrder = new Map(ACHIEVEMENT_DEFINITIONS.map((def, idx) => [def.id, idx]))
-  return (data as Achievement[]).sort((a, b) => {
-    const idxA = idOrder.get(a.id) ?? 999
-    const idxB = idOrder.get(b.id) ?? 999
-    return idxA - idxB
-  })
-}
-
-export async function getUserAchievements() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Not authenticated')
-
-  const { data, error } = await supabase
-    .from('user_achievements')
-    .select('*, achievements(*)')
-    .eq('user_id', user.id)
-    .order('unlocked_at', { ascending: false })
-
-  if (error) throw error
-  return data
-}
-
-export async function checkAndUnlockAchievements(): Promise<Achievement[]> {
-  const { data: { user } } = await supabase.auth.getUser()
+/**
+ * Checks all achievements and unlocks any that meet requirements.
+ * Parallelizes independent Supabase fetches.
+ */
+export async function checkAndUnlockAchievements(): Promise<AchievementDef[]> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return []
 
-  await ensureAchievementsSeeded()
+  // Parallel fetch: categories, entries, and already-unlocked achievements
+  const [catResult, entriesResult, unlockedResult] = await Promise.all([
+    supabase
+      .from('categories')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true),
+    supabase
+      .from('daily_entries')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('completed', true),
+    supabase
+      .from('user_achievements')
+      .select('achievement_id')
+      .eq('user_id', user.id),
+  ])
 
-  // 1. Fetch user categories
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('user_id', user.id)
+  const userCats = (catResult.data || []) as Category[]
+  const completedEntries = entriesResult.data || []
+  const unlocked = unlockedResult.data || []
 
-  // 2. Fetch all completed entries for user
-  const { data: entries } = await supabase
-    .from('daily_entries')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('completed', true)
+  // Generate all definitions in memory
+  const achievements = getAchievementDefinitions(userCats)
 
-  // 3. Fetch all definitions
-  const { data: achievements } = await supabase
-    .from('achievements')
-    .select('*')
-
-  // 4. Fetch already unlocked
-  const { data: unlocked } = await supabase
-    .from('user_achievements')
-    .select('achievement_id')
-    .eq('user_id', user.id)
-
-  if (!categories || !achievements || !unlocked) return []
+  // Ensure DB rows exist for FK constraints (batch upsert)
+  await ensureAchievementsInDb(achievements)
 
   const unlockedIds = new Set(unlocked.map((u) => u.achievement_id))
-  const completedEntries = entries || []
 
-  // Pre-calculate user metrics
+  // Metrics calculation
   const uniqueCompletedDates = Array.from(new Set(completedEntries.map((e) => e.entry_date))).sort()
   const totalCompletedDays = uniqueCompletedDates.length
 
-  // Calculate streaks across categories
-  let maxCurrentStreak = 0
-  let maxLongestStreak = 0
+  let maxCurrentStreak = getStreakFromDates(uniqueCompletedDates)
+  let maxLongestStreak = getLongestStreak(uniqueCompletedDates)
 
-  categories.forEach((cat) => {
+  const categoryStatsMap: Record<string, { completedDays: number; currentStreak: number; longestStreak: number }> = {}
+
+  userCats.forEach((cat) => {
     const catDates = completedEntries.filter((e) => e.category_id === cat.id).map((e) => e.entry_date)
-    const current = getStreakFromDates(catDates)
-    const longest = Math.max(getLongestStreak(catDates), cat.longest_streak || 0)
+    const uniqueCatDates = new Set(catDates)
+    const current = getStreakFromDates(Array.from(uniqueCatDates))
+    const longest = Math.max(getLongestStreak(Array.from(uniqueCatDates)), cat.longest_streak || 0)
+
+    categoryStatsMap[cat.id] = {
+      completedDays: uniqueCatDates.size,
+      currentStreak: current,
+      longestStreak: longest,
+    }
+
     maxCurrentStreak = Math.max(maxCurrentStreak, current)
     maxLongestStreak = Math.max(maxLongestStreak, longest)
   })
 
-  // Highest streak ever achieved or current streak
-  const bestStreak = Math.max(maxCurrentStreak, maxLongestStreak, getLongestStreak(uniqueCompletedDates))
+  const bestStreak = Math.max(maxCurrentStreak, maxLongestStreak)
 
-  const journalEntriesCount = completedEntries.filter((e) => e.title || e.description).length
-  const resourceCount = completedEntries.filter((e) => e.resource_url).length
+  const journalEntriesCount = completedEntries.filter(
+    (e) => (e.title && e.title.trim() !== '') || (e.description && e.description.trim() !== '')
+  ).length
   const uniqueCategoriesCompletedCount = new Set(completedEntries.map((e) => e.category_id)).size
+  const totalCategories = userCats.length
 
-  // Check Early Bird (< 9 AM) and Night Owl (>= 22 / 10 PM)
-  let hasEarlyBird = false
-  let hasNightOwl = false
+  const overviewStats = {
+    totalCompletedDays,
+    longestStreak: bestStreak,
+    totalCategories,
+    completedCategoriesCount: uniqueCategoriesCompletedCount,
+    totalJournalEntries: journalEntriesCount,
+    categoryStatsMap,
+  }
 
-  completedEntries.forEach((e) => {
-    if (e.created_at) {
-      const date = new Date(e.created_at)
-      const hour = date.getHours()
-      if (hour < 9) hasEarlyBird = true
-      if (hour >= 22) hasNightOwl = true
-    }
-  })
+  const newlyUnlockedObjects: AchievementDef[] = []
 
-  const newlyUnlockedObjects: Achievement[] = []
-
-  for (const achievement of achievements as Achievement[]) {
+  for (const achievement of achievements) {
     if (unlockedIds.has(achievement.id)) continue
 
-    let shouldUnlock = false
-    const reqValue = achievement.requirement_value
+    const evalRes = evaluateAchievement(achievement, overviewStats)
 
-    switch (achievement.requirement_type) {
-      case 'streak':
-        shouldUnlock = bestStreak >= reqValue || (reqValue === 1 && totalCompletedDays >= 1)
-        break
-
-      case 'total_days':
-        shouldUnlock = totalCompletedDays >= reqValue
-        break
-
-      case 'categories_count':
-        shouldUnlock = categories.length >= reqValue
-        break
-
-      case 'journal_count':
-        shouldUnlock = journalEntriesCount >= reqValue
-        break
-
-      case 'perfect_week':
-        shouldUnlock = bestStreak >= 7
-        break
-
-      case 'perfect_month':
-        shouldUnlock = bestStreak >= 30
-        break
-
-      case 'explorer':
-        shouldUnlock = uniqueCategoriesCompletedCount >= 5
-        break
-
-      case 'early_bird':
-        shouldUnlock = hasEarlyBird
-        break
-
-      case 'night_owl':
-        shouldUnlock = hasNightOwl
-        break
-
-      case 'resource_count':
-        shouldUnlock = resourceCount >= 25
-        break
-
-      case 'milestone':
-        shouldUnlock = totalCompletedDays >= reqValue
-        break
-    }
-
-    if (shouldUnlock) {
+    if (evalRes.isUnlocked) {
       const { error } = await supabase
         .from('user_achievements')
         .insert({ user_id: user.id, achievement_id: achievement.id })

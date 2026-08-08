@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useOverviewStats } from '@/hooks/use-statistics'
 import { useAchievementStats } from '@/hooks/use-achievements'
 import { DynamicIcon } from '@/components/achievements/dynamic-icon'
-import { RARITY_COLORS } from '@/lib/achievement-definitions'
+import { RARITY_COLORS, evaluateAchievement } from '@/lib/achievement-definitions'
 import { ProgressBar } from '@/components/shared/progress-bar'
 import { AnimatedCounter } from '@/components/shared/animated-counter'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -31,6 +31,10 @@ export default function ProfilePage() {
     rarestUnlocked,
     nextAchievement,
   } = useAchievementStats()
+
+  const { current: nextCurrent, max: nextMax, ratio: nextRatio } = nextAchievement
+    ? evaluateAchievement(nextAchievement, stats)
+    : { current: 0, max: 1, ratio: 0 }
 
   const isLoading = authLoading || loadingStats || loadingAch
   const initials = user?.user_metadata?.full_name
@@ -145,7 +149,8 @@ export default function ProfilePage() {
                   No achievements unlocked yet. Complete your first task!
                 </div>
               ) : (
-                rarestUnlocked.map((ach) => {
+                rarestUnlocked.map((item: any) => {
+                  const ach = item.achievement || item
                   const rarity = (ach.rarity || 'Common') as keyof typeof RARITY_COLORS
                   const colors = RARITY_COLORS[rarity] || RARITY_COLORS.Common
 
@@ -216,11 +221,14 @@ export default function ProfilePage() {
             {/* Next Achievement Progress Card */}
             {nextAchievement && (
               <Card className="border-border/40 bg-card/50 backdrop-blur-sm rounded-3xl overflow-hidden">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
                   <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center">
                     <Target className="w-3.5 h-3.5 mr-1.5 text-primary" />
                     Next Achievement Target
                   </CardTitle>
+                  <span className="text-xs font-semibold text-foreground">
+                    {nextCurrent} / {nextMax}
+                  </span>
                 </CardHeader>
                 <CardContent className="p-5 pt-0 space-y-3">
                   <div className="flex items-center gap-3">
@@ -233,7 +241,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                   <div className="pt-1">
-                    <ProgressBar value={25} max={100} color="#3b82f6" size="sm" className="rounded-full" />
+                    <ProgressBar value={nextRatio} max={100} color="#3b82f6" size="sm" className="rounded-full" />
                   </div>
                 </CardContent>
               </Card>

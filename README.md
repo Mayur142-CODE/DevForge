@@ -1,154 +1,164 @@
-<div align="center">
-  <br />
-  <h1>🔥 StreakHub</h1>
-  <p>
-    <strong>Build consistency. One day at a time.</strong>
-  </p>
-  <br />
+# 🔥 StreakHub
 
-  <!-- Badges -->
-  <p>
-    <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
-    <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-    <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
-    <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-    <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white" alt="Framer Motion" />
-    <img src="https://img.shields.io/badge/shadcn/ui-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
-    <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="MIT License" />
-  </p>
-</div>
+StreakHub is a personal discipline and consistency tracking platform designed to help developers build daily learning habits, maintain streaks, track progress, and celebrate achievements.
 
-<br />
-
-## 📖 Overview
-
-**StreakHub** is a modern discipline and streak tracking platform that helps you stay consistent with coding, learning, and personal growth through GitHub-style contribution heatmaps, daily streaks, analytics, and achievements.
-
-Whether you are grinding algorithms or learning new stacks, StreakHub keeps you accountable across any technical discipline, including:
-
-- LeetCode
-- GitHub Commits
-- DevOps
-- AI & Machine Learning
-- Data Science
-- .NET, React, Laravel, MERN
-- Docker & Kubernetes
-- AWS & System Design
-- Competitive Programming
-- *...and custom learning categories tailored to your goals.*
+🚀 **Live Demo:** [https://streak-hub-ten.vercel.app/](https://streak-hub-ten.vercel.app/)
 
 ---
 
 ## ✨ Features
 
-- [x] **Secure Authentication**: Passwordless or traditional email authentication powered by Supabase.
-- [x] **Personalized Dashboard**: A premium, 12-column responsive layout with real-time statistics.
-- [x] **Contribution Heatmaps**: GitHub-style activity graphs to visualize your consistency over a 365-day rolling period.
-- [x] **Daily & Longest Streak Tracking**: Sophisticated algorithm that guarantees accurate streak metrics.
-- [x] **Category Management**: Create, edit, and delete custom tracks with distinct colors and icons.
-- [x] **Real-time Statistics**: Live completion rates and goal tracking.
-- [x] **Achievement System**: Unlockable badges for hitting milestones.
-- [x] **Row Level Security (RLS)**: Fully protected PostgreSQL database ensuring data privacy.
-- [x] **Beautiful Minimal UI**: High-end glassmorphic components and micro-interactions built with Framer Motion.
-- [x] **Dark Mode**: Native, beautiful dark mode tailored for developers.
+- 🔥 **Daily Streak Tracking**: Automatically calculates current and longest streaks to maintain momentum.
+- 📊 **GitHub-Style Contribution Heatmaps**: Interactive heatmaps visualizing daily consistency and activity patterns.
+- 📝 **Daily Learning & Activity Notes**: Attach descriptive notes and titles to your daily progress updates.
+- 🔗 **Optional Resource Links**: Store relevant links (code repos, articles, documentation, PRs) for every check-in.
+- 📈 **Statistics & Progress Tracking**: Real-time analytics, charts, completion percentages, and productivity metrics.
+- 🏆 **Automatic Achievements**: Badges unlock dynamically as you hit streak milestones and completed day goals.
+- 👤 **User Profile & Activity History**: Comprehensive activity log and milestone showcase attached to your user account.
+- 📚 **Custom Learning Categories**: Organize work into personalized tracks (e.g., LeetCode, DevOps, AI/ML, System Design).
+- 🔐 **Supabase Email Authentication**: Secure user registration and session management.
+- 🎨 **Minimal Dark-Themed UI**: Sleek, modern dark UI designed for developer comfort.
+- 📱 **Responsive Design**: Flawlessly optimized across mobile, tablet, and desktop viewports.
+- 🌐 **Deployed on Vercel**: Lightning-fast global delivery powered by Vercel infrastructure.
 
 ---
 
 ## 📸 Screenshots
 
-### Dashboard
+<div align="center">
+
+### 📊 Dashboard
+Overview of active categories, daily status, quick check-in actions, and overall contribution activity.
+
 ![Dashboard](docs/dashboard.png)
-*A birds-eye view of your ongoing learning tracks and streaks.*
 
-### Categories
+---
+
+### 📚 Categories Management
+Create, edit, organize, and inspect custom learning tracks with custom colors and icons.
+
 ![Categories](docs/categories.png)
-*Manage and organize your distinct disciplines.*
 
-### Category Details
+---
+
+### 🔍 Category Details & Heatmap
+In-depth category view featuring category-specific contribution heatmaps, notes history, and metrics.
+
 ![Category Details](docs/category-details.png)
-*Dive deep into your performance with massive hero heatmaps and statistical insights.*
 
-### Statistics
-![Statistics](docs/statistics.png)
-*Granular analytics on your consistency over time.*
+---
 
-### Profile
+### 🏆 Automatic Achievements
+Dynamic milestone badges unlocked through consistent streak building and completed activities.
+
+![Achievements](docs/achievement.png)
+
+---
+
+### 👤 User Profile
+Personalized user stats summary, unlocked achievements display, and profile settings.
+
 ![Profile](docs/profile.png)
-*View your achievements and manage your account.*
-
-*(Note: Replace placeholders with actual screenshot paths)*
 
 ---
 
-## 💻 Tech Stack
+### 📈 Statistics & Analytics
+Comprehensive performance overview, charts, and activity breakdowns over time.
 
-| Layer | Technology |
-| --- | --- |
-| **Frontend Framework** | Next.js 14 (App Router) |
-| **UI Library** | React 18 |
-| **Language** | TypeScript |
-| **Styling** | Tailwind CSS |
-| **Component System** | shadcn/ui |
-| **Animations** | Framer Motion |
-| **Icons** | Lucide React |
-| **Backend & Auth** | Supabase |
-| **Database** | PostgreSQL |
-| **Deployment** | Vercel |
+![Statistics](docs/statistics.png)
 
 ---
 
-<details>
-<summary><h2>📁 Project Structure</h2></summary>
+### 🔐 Authentication
+Secure login and sign-up flow backed by Supabase Auth.
 
-```text
-📦 StreakHub
- ┣ 📂 src
- ┃ ┣ 📂 app
- ┃ ┃ ┣ 📂 (auth)        # Authentication routes (Login, Verify, Callback)
- ┃ ┃ ┣ 📂 (dashboard)   # Main application routes (Dashboard, Categories, Profile)
- ┃ ┃ ┣ 📂 api           # Next.js API routes
- ┃ ┃ ┗ 📜 layout.tsx    # Root layout and providers
- ┃ ┣ 📂 components
- ┃ ┃ ┣ 📂 categories    # Reusable category cards and dialogs
- ┃ ┃ ┣ 📂 heatmap       # GitHub-style calendar heatmap components
- ┃ ┃ ┣ 📂 shared        # Shared layouts, animated counters, page transitions
- ┃ ┃ ┗ 📂 ui            # Base shadcn/ui components
- ┃ ┣ 📂 features        # Feature-based domain logic and hooks
- ┃ ┣ 📂 hooks           # Shared React custom hooks
- ┃ ┣ 📂 lib             # Utility functions and Supabase clients
- ┃ ┣ 📂 services        # Server actions and database interactions
- ┃ ┗ 📂 types           # Global TypeScript interfaces
- ┣ 📂 supabase
- ┃ ┗ 📂 migrations      # PostgreSQL schemas and RLS policies
- ┣ 📜 tailwind.config.ts
- ┣ 📜 next.config.ts
- ┗ 📜 package.json
-```
+![Authentication](docs/Auth%20Page.png)
 
-</details>
+</div>
 
 ---
 
-## 🗄️ Database Schema
+## 🧠 How It Works
 
-The PostgreSQL backend handles all relational logic securely using Row Level Security (RLS):
-
-- **`profiles`**: Extends the `auth.users` table with user metadata (avatars, full names).
-- **`categories`**: Tracks distinct learning paths. Includes pre-computed aggregate fields (like `current_streak` and `longest_streak`).
-- **`daily_entries`**: A chronological record of every daily check-in (category_id, user_id, entry_date).
-- **`achievements`**: Global repository of unlockable badges (e.g., "100 Days of LeetCode").
-- **`user_achievements`**: A bridge table representing when a specific user unlocked a specific achievement.
-- **`reminders`**: Configurable push/email reminders.
-- **`activity_logs`**: Audit trail of major user events.
+1. **Create an Account**: Register securely via email authentication powered by Supabase.
+2. **Create Learning / Discipline Categories**: Set up tracks tailored to your daily goals, such as:
+   - LeetCode
+   - GitHub
+   - AI & Machine Learning
+   - DevOps
+   - .NET / Full Stack Development
+   - System Design
+   - Custom tracks
+3. **Mark Completed for the Day**: Check in on your active categories daily.
+4. **Enter Work Log**: Record your actual output with:
+   - **Title**: A brief summary of what was accomplished.
+   - **Description**: Detailed reflection or learning notes.
+   - **Optional Resource Link**: Reference link to a GitHub PR, solution, or article.
+5. **Record Contribution**: StreakHub saves and timestamp-logs your activity.
+6. **Heatmap & Streak Update**: Your contribution is immediately plotted on your rolling heatmap.
+7. **Automated Metrics**: Current streak, longest streak, and completion statistics recalculate automatically.
+8. **Unlock Achievements**: Earn badges dynamically as your consistency builds up.
 
 ---
 
-<details>
-<summary><h2>⚙️ Installation</h2></summary>
+## 🔥 Streak System
 
-Follow these instructions to set up StreakHub locally.
+- **Daily Progression**: Completing an activity on a given day advances your current streak.
+- **Streak Break Logic**: If a required consecutive calendar day passes without a completion, your current streak resets to **0**.
+- **Historical Best**: Your **Longest Streak** record is permanently preserved and will never decrease, even if a current streak is broken.
+- **Visual Heatmap**: Contribution heatmaps map out actual logged days, giving you an authentic record of consistency.
+- **Single-Day Aggregation**: Completing multiple categories on the same date counts as **ONE unique completed day** for overall platform activity heatmaps and global stats.
+
+---
+
+## 🏆 Achievements
+
+StreakHub automatically evaluates activity metrics and grants milestone achievements without requiring manual claims. Unlocked achievements automatically synchronize with the user profile.
+
+### Examples of Unlockable Badges:
+- 🚀 **First Step**: Log your very first contribution.
+- 🔥 **3-Day Streak**: Maintain consistency for 3 consecutive days.
+- ⚡ **7-Day Streak**: Build a solid 1-week habit.
+- 🏅 **30-Day Streak**: Reach a full month of continuous discipline.
+- 🎯 **Completed Days Milestones**: Hit major milestones for total unique active days.
+- 📚 **Category Milestones**: Reach target check-in counts within specific categories.
+- 🧠 **Consistency Milestones**: Sustain long-term learning habits across multiple categories.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org/) (App Router, Server Actions)
+- **Library**: [React](https://react.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+- **Authentication**: [Supabase Auth](https://supabase.com/auth)
+- **Database**: [Supabase PostgreSQL](https://supabase.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [Lucide Icons](https://lucide.dev/)
+- **Data Visualization**: [Recharts](https://recharts.org/)
+- **State & Data Management**: [Zustand](https://zustand-demo.pmnd.rs/) & [TanStack React Query](https://tanstack.com/query/latest)
+- **Deployment**: [Vercel](https://vercel.com/)
+
+---
+
+## 🔐 Authentication & Backend
+
+- **Supabase Auth**: Secure email/password login and registration.
+- **PostgreSQL Database**: Relational schema engineered for user profiles, categories, daily check-in logs, and achievement tracking.
+- **Isolated User Data**: All user activities and tracks are strictly scoped to the authenticated user ID.
+- **Row Level Security (RLS)**: Enforced at the database level to ensure users can only query and mutate their own data.
+- **Secret Protection**: All Supabase credentials and secret keys are stored securely using environment variables and are never exposed in public code.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Ensure you have Node.js (v18 or higher) and npm installed on your machine.
+
+### Installation & Local Setup
 
 1. **Clone the repository:**
    ```bash
@@ -161,91 +171,16 @@ Follow these instructions to set up StreakHub locally.
    npm install
    ```
 
-3. **Set up Environment Variables:**
+3. **Configure Environment Variables:**
    Create a `.env.local` file in the root directory:
-   ```bash
-   touch .env.local
-   ```
-   Add your Supabase credentials:
    ```env
-   NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-4. **Initialize Database:**
-   Run the SQL migration script located at `supabase/migrations/001_initial_schema.sql` inside your Supabase project's SQL Editor.
-
-5. **Run the development server:**
+4. **Start the Development Server:**
    ```bash
    npm run dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-</details>
-
----
-
-## 🔑 Environment Variables
-
-| Variable | Required | Description |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | The URL of your Supabase project. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | The public anon key for secure frontend queries. |
-
----
-
-## 🎮 Usage
-
-- **Register / Login**: Sign up via the magical secure email link or standard password login. 
-- **Create Category**: Head to the dashboard, click "Add Category", pick an icon, color, and set your goals.
-- **Mark Today's Progress**: On any category card, simply click the "Check In" button. Your heatmap and streak will update instantly.
-- **Track Streak**: View your Current Streak, Longest Streak, and Total Completion Rate on the Category Details page.
-- **View Statistics**: Monitor your progress across months and analyze your most productive days.
-- **Unlock Achievements**: Maintain your streaks to dynamically unlock badges like "Year Legend" or "Git Machine".
-
----
-
-## 🔥 Streak Logic
-
-StreakHub uses a highly strict, accurate streak calculation algorithm:
-
-- **One completion per category per day**: You can only check in once per day for a specific category.
-- **Immediate Feedback**: Completing today *immediately* increases your current streak. You don't have to wait until tomorrow!
-- **Grace Periods**: If you checked in yesterday, your streak is safe until midnight tonight.
-- **Streak Breaks**: Missing exactly one day completely breaks your current streak, resetting it to 0. 
-- **Preserved Records**: Your `Longest Streak` is immutable and will *never* decrease, even if you lose your current streak or accidentally uncheck a past date.
-
----
-
-## 🤝 Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📜 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-## 👨‍💻 Author
-
-**Mayur Chavda**
-
-- GitHub: [@Mayur142-CODE](https://github.com/Mayur142-CODE)
-- LinkedIn: [Your LinkedIn URL](#) *(Coming Soon)*
-- Portfolio: [Your Portfolio URL](#) *(Coming Soon)*
-
----
-
-<div align="center">
-  <p>Built with ❤️ using Next.js, Supabase, and TypeScript.</p>
-</div>
+5. Open [http://localhost:3000](http://localhost:3000) in your browser to view StreakHub.

@@ -13,8 +13,7 @@ import { Category } from '@/types/database'
 
 export default function CategoriesPage() {
   const { data: categories, isLoading: isCategoriesLoading } = useCategories()
-  const currentYear = new Date().getFullYear()
-  const { data: dailyEntries, isLoading: isEntriesLoading } = useDailyEntries(currentYear)
+  const { data: dailyEntries, isLoading: isEntriesLoading } = useDailyEntries()
   const deleteCategory = useDeleteCategory()
   
   const [editingCategory, setEditingCategory] = React.useState<Category | null>(null)
